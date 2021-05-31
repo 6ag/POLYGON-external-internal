@@ -24,6 +24,19 @@ void Renderer::drawFrames()
 	{
 		if (playerWorldToScreen(GlobalVars::get().playerList[i], matrix))
 		{
+			Vector2 boneVec2;
+			Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
+
+			// 死了骨头计算不对，就跳过
+			if (!boneWorldToScreen(screenSize, getBonePos(GlobalVars::get().playerList[i]->skeletonMatrixAddr, GlobalVars::get().playerList[i]->skeletonArrayAddr + 1 * 48), boneVec2, matrix))
+			{
+				continue;
+			}
+			if (boneVec2.x == 0 && boneVec2.y == 0)
+			{
+				continue;
+			}
+
 			//baseAddrEsp(GlobalVars::get().enemyList[i]);
 			// 透视
 			if (GlobalVars::get().playerList[i]->distance <= Menu::get().espRange)
@@ -265,23 +278,6 @@ bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matr
 
 	// 目标和摄像机的距离
 	player->distance = w / 100.0f;
-
-	// 第一人称游戏有时候看不到自己身上的一些地址，可以调整算法，让地址显示出来
-	/*float x1 = (pos.x + 0);
-	float x2 = (pos.x + 200);
-	float x3 = (pos.x + 200);
-
-	float y1 = (pos.y + 0);
-	float y2 = (pos.y + 200);
-	float y3 = (pos.y + 200);
-
-	float z1 = (pos.z + 0);
-	float z2 = (pos.z + 110);
-	float z3 = (pos.z - 110);
-
-	float centerX = screen_size.x * .5f + (matrix[0][0] * x1 + matrix[1][0] * y1 + matrix[2][0] * z1 + matrix[3][0]) / w * screen_size.x * .5f;
-	float minY = screen_size.y * .5f - (matrix[0][1] * x2 + matrix[1][1] * y2 + matrix[2][1] * z2 + matrix[3][1]) / w * screen_size.y * .5f;
-	float maxY = screen_size.y * .5f - (matrix[0][1] * x3 + matrix[1][1] * y3 + matrix[2][1] * z3 + matrix[3][1]) / w * screen_size.y * .5f;*/
 
 	float centerX = GlobalVars::get().drawRect.centerX + (matrix[0][0] * player->origin.x + matrix[1][0] * player->origin.y + matrix[2][0] * player->origin.z + matrix[3][0]) / w * GlobalVars::get().drawRect.centerX;
 	float minY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->origin.x + matrix[1][1] * player->origin.y + matrix[2][1] * (player->origin.z + 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;

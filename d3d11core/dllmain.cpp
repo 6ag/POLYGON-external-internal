@@ -26,6 +26,7 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 bool isInitD3DAndImGui = false;
 HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT Flags)
 {
+	Renderer::get().pSwapChain = pSwapChain;
 	if (!isInitD3DAndImGui)
 	{
 		// 初始化D3D和ImGui
@@ -35,10 +36,13 @@ HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT
 			DXGI_SWAP_CHAIN_DESC sd;
 			pSwapChain->GetDesc(&sd);
 			GlobalVars::get().hWindow = sd.OutputWindow;
+
+			// 创建RenderTarget
 			ID3D11Texture2D * pBackBuffer;
 			pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&pBackBuffer);
 			Renderer::get().pD3DDevice->CreateRenderTargetView(pBackBuffer, NULL, &Renderer::get().pMainRenderTargetView);
 			pBackBuffer->Release();
+
 			oWndProc = (WNDPROC)SetWindowLongPtr(GlobalVars::get().hWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
 			// 初始化imgui
@@ -65,7 +69,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT
 	return oPresent(pSwapChain, SyncInterval, Flags);
 }
 
-DWORD WINAPI UpdateThread(HMODULE hModule)
+DWORD WINAPI updateThread(HMODULE hModule)
 {
 	cout << "开始读取数据" << endl;
 
@@ -93,7 +97,7 @@ DWORD WINAPI UpdateThread(HMODULE hModule)
 	return TRUE;
 }
 
-DWORD WINAPI MainThread(HANDLE hModule)
+DWORD WINAPI mainThread(HANDLE hModule)
 {
 	bool init_hook = false;
 	do
@@ -106,7 +110,7 @@ DWORD WINAPI MainThread(HANDLE hModule)
 	}
 	while (!init_hook);
 
-	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)UpdateThread, hModule, NULL, NULL);
+	CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)updateThread, hModule, NULL, NULL);
 	return TRUE;
 }
 
@@ -137,19 +141,33 @@ VOID startDebugWindow()
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
+	DisableThreadLibraryCalls(hModule);
 	switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
 			startDebugWindow();
-			DisableThreadLibraryCalls(hModule);
-			CreateThread(nullptr, 0, MainThread, hModule, 0, nullptr);
+			CreateThread(nullptr, 0, mainThread, hModule, 0, nullptr);
 			break;
 		case DLL_PROCESS_DETACH:
-			// 清理工作
+			kiero::unbind(8);
+			kiero::shutdown();
+
+			SetWindowLongPtr(GlobalVars::get().hWindow, GWLP_WNDPROC, (LONG_PTR)oWndProc);
+			Renderer::get().pSwapChain->Release();
+			Renderer::get().pSwapChain = nullptr;
+			Renderer::get().pMainRenderTargetView->Release();
+			Renderer::get().pMainRenderTargetView = nullptr;
+			Renderer::get().pD3DDevice->Release();
+			Renderer::get().pD3DDevice = nullptr;
+			Renderer::get().pD3DDeviceContext->Release();
+			Renderer::get().pD3DDeviceContext = nullptr;
+
+			oPresent = nullptr;
+			oWndProc = nullptr;
+
 			ImGui_ImplDX11_Shutdown();
 			ImGui_ImplWin32_Shutdown();
 			ImGui::DestroyContext();
-			kiero::shutdown();
 			break;
 	}
 	return TRUE;

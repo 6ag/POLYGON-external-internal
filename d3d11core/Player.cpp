@@ -82,9 +82,12 @@ void Player::update()
 			return;
 		}*/
 
+		// 注意：第一人称游戏有时候看不到自己身上的一些地址，可以调整坐标，让地址显示出来。0-200调整
+		float offsetX = 0;
+
 		// 坐标
 		uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(base + GlobalVars::get().ofs.actorPosition_offset);
-		origin.x = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset);
+		origin.x = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset) + offsetX;
 		origin.y = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset);
 		origin.z = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset);
 

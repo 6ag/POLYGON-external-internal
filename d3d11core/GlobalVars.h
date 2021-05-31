@@ -213,7 +213,7 @@ public:
 	// 游戏窗口的句柄
 	HWND hWindow;
 
-	// 游戏模块基址
+	// 游戏模块基址，其实就是模块句柄
 	uintptr_t baseAddr;
 	// 世界地址
 	uintptr_t worldAddr;

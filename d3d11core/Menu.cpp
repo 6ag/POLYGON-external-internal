@@ -7,6 +7,7 @@ void Menu::init()
 {
 	if (!isInit)
 	{
+		IMGUI_CHECKVERSION();
 		// 初始化imgui
 		ImGui::CreateContext();
 		// 获取imgui
@@ -53,6 +54,11 @@ void Menu::init()
 
 void Menu::imGuiStart()
 {
+	if (!isInit)
+	{
+		return;
+	}
+
 	// 状态切换，鼠标按下，判断条件也会通过
 	switchState();
 
@@ -152,9 +158,10 @@ void Menu::imGuiStart()
 	ImGui::End();
 }
 
-// 热键控制 -32767单点 -32768按下
+// 热键控制
 void Menu::switchState()
 {
+	//  -32767单点 -32768按下
 	SHORT pressed = -32768;
 	SHORT click = -32767;
 
