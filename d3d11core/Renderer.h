@@ -36,6 +36,7 @@ public:
 	// dx11上下文
 	ID3D11DeviceContext * pD3DDeviceContext = nullptr;
 	ID3D11RenderTargetView * pMainRenderTargetView = nullptr;
+	// dx交换链
 	IDXGISwapChain * pSwapChain = nullptr;
 
 	ImDrawList * pImBuffer = nullptr;

@@ -170,29 +170,51 @@ VOID startDebugWindow()
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
-	DisableThreadLibraryCalls(hModule);
 	switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
 			startDebugWindow();
+			DisableThreadLibraryCalls(hModule);
 			CreateThread(nullptr, 0, mainThread, hModule, 0, nullptr);
 			break;
 		case DLL_PROCESS_DETACH:
 			kiero::unbind(8);
 			kiero::shutdown();
 
-			SetWindowLongPtr(GlobalVars::get().hWindow, GWLP_WNDPROC, (LONG_PTR)oWndProc);
-			Renderer::get().pSwapChain->Release();
-			Renderer::get().pSwapChain = nullptr;
-			Renderer::get().pMainRenderTargetView->Release();
-			Renderer::get().pMainRenderTargetView = nullptr;
-			Renderer::get().pD3DDevice->Release();
-			Renderer::get().pD3DDevice = nullptr;
-			Renderer::get().pD3DDeviceContext->Release();
-			Renderer::get().pD3DDeviceContext = nullptr;
+			if (oWndProc != nullptr)
+			{
+				SetWindowLongPtr(GlobalVars::get().hWindow, GWLP_WNDPROC, (LONG_PTR)oWndProc);
+				oWndProc = nullptr;
+			}
 
-			oPresent = nullptr;
-			oWndProc = nullptr;
+			if (Renderer::get().pSwapChain != nullptr)
+			{
+				Renderer::get().pSwapChain->Release();
+				Renderer::get().pSwapChain = nullptr;
+			}
+
+			if (Renderer::get().pMainRenderTargetView != nullptr)
+			{
+				Renderer::get().pMainRenderTargetView->Release();
+				Renderer::get().pMainRenderTargetView = nullptr;
+			}
+
+			if (Renderer::get().pD3DDevice != nullptr)
+			{
+				Renderer::get().pD3DDevice->Release();
+				Renderer::get().pD3DDevice = nullptr;
+			}
+
+			if (Renderer::get().pD3DDeviceContext != nullptr)
+			{
+				Renderer::get().pD3DDeviceContext->Release();
+				Renderer::get().pD3DDeviceContext = nullptr;
+			}
+
+			if (oPresent != nullptr)
+			{
+				oPresent = nullptr;
+			}
 
 			ImGui_ImplDX11_Shutdown();
 			ImGui_ImplWin32_Shutdown();
@@ -201,3 +223,21 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	}
 	return TRUE;
 }
+
+//static bool isHooked = true;
+//
+//// https://msdn.microsoft.com/en-us/library/ms644981(v=VS.85).aspx
+//// we hook this callback when using SetWindowsHookEx on WH_GETMESSAGE
+//// hence the lParam is a pointer to a MSG struct
+//extern "C" __declspec(dllexport) LRESULT CALLBACK UnhookProc(int code, WPARAM wParam, LPARAM lParam)
+//{
+//	MSG * msg = (MSG *)lParam;
+//	if (isHooked && msg->message == 0x1000)
+//	{
+//		UnhookWindowsHookEx((HHOOK)msg->lParam);
+//		isHooked = false;
+//		//MessageBoxA(NULL, "Called UnhookWindowsHookEx", "d3d11core", NULL);
+//	}
+//
+//	return CallNextHookEx(0, code, wParam, lParam);
+//}
