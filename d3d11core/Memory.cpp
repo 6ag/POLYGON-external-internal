@@ -1,8 +1,5 @@
 ﻿#include "Memory.h"
-
-#ifdef EXTERNAL_DRAW
 #include <TlHelp32.h>
-#endif
 
 #if defined(_MSC_VER)
 #ifndef _CRT_SECURE_NO_DEPRECATE

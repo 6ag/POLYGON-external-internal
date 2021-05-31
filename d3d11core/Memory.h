@@ -17,13 +17,13 @@ public:
 template<class T> inline T Memory::read(uintptr_t addres)
 {
 #ifdef EXTERNAL_DRAW
-	T buffer;
+	T buffer{};
 	ReadProcessMemory(GlobalVars::get().hProcess, LPVOID(addres), &buffer, sizeof(buffer), 0);
 	return buffer;
 #else
 	if (!IsBadReadPtr((PVOID)addres, sizeof(T)))
 		return *(T *)addres;
-	T buffer;
+	T buffer{};
 	return buffer;
 #endif
 }

@@ -30,8 +30,14 @@ void Menu::init()
 		io.WantSaveIniSettings = false;
 		io.IniFilename = NULL;
 
+	#ifdef EXTERNAL_DRAW
+		// 外部绘制默认隐藏菜单
+		showMenu = false;
+		ImGui::StyleColorsClassic();
+	#else
 		// 自定义样式
 		styleCusom();
+	#endif
 
 		// 初始化cpu频率和当前开机时间以及事件类型
 		ImGui_ImplWin32_Init(GlobalVars::get().hWindow);
@@ -39,7 +45,6 @@ void Menu::init()
 		ImGui_ImplDX11_Init(Renderer::get().pD3DDevice, Renderer::get().pD3DDeviceContext);
 
 		isInit = true;
-
 		// 测试，默认开启
 		if (true)
 		{
@@ -75,88 +80,89 @@ void Menu::imGuiStart()
 	{
 		return;
 	}
-
-	ImGui::Begin(u8"我爱中国", &showMenu, ImGuiCond_Always | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar);
-	ImGui::TextColored(ImColor(220, 20, 60, 255), u8"【Ins】隐藏/显示菜单");
-	ImGui::TextColored(ImColor(0, 191, 255, 255), u8"透视选项");
-	if (ImGui::BeginTable("split", 2))
 	{
-		ImGui::TableNextColumn(); ImGui::Checkbox(u8"方框透视  【F1】", &boxEsp);
-		ImGui::TableNextColumn(); ImGui::Checkbox(u8"连线透视  【F2】", &lineEsp);
-		ImGui::TableNextColumn(); ImGui::Checkbox(u8"骨头透视  【F3】", &boneEsp);
-		ImGui::TableNextColumn(); ImGui::Checkbox(u8"距离透视  【F4】", &distanceEsp);
-		ImGui::TableNextColumn(); ImGui::Checkbox(u8"血条透视", &hpEsp);
-		ImGui::TableNextColumn(); ImGui::Checkbox(u8"友方透视", &openFriendEsp);
-		ImGui::EndTable();
+		ImGui::Begin(u8"我爱中国", &showMenu, ImGuiCond_Always | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar);
+		ImGui::TextColored(ImColor(220, 20, 60, 255), u8"【Ins】隐藏/显示菜单");
+		ImGui::TextColored(ImColor(0, 191, 255, 255), u8"透视选项");
+		if (ImGui::BeginTable("split", 2))
+		{
+			ImGui::TableNextColumn(); ImGui::Checkbox(u8"方框透视  【F1】", &boxEsp);
+			ImGui::TableNextColumn(); ImGui::Checkbox(u8"连线透视  【F2】", &lineEsp);
+			ImGui::TableNextColumn(); ImGui::Checkbox(u8"骨头透视  【F3】", &boneEsp);
+			ImGui::TableNextColumn(); ImGui::Checkbox(u8"距离透视  【F4】", &distanceEsp);
+			ImGui::TableNextColumn(); ImGui::Checkbox(u8"血条透视", &hpEsp);
+			ImGui::TableNextColumn(); ImGui::Checkbox(u8"友方透视", &openFriendEsp);
+			ImGui::EndTable();
+		}
+
+		ImGui::TextColored(ImColor(0, 191, 255, 255), u8"敌人透视颜色");
+		static int espColorIndex = 0;
+		ImGui::RadioButton(u8"红", &espColorIndex, 0); ImGui::SameLine();
+		ImGui::RadioButton(u8"橘", &espColorIndex, 1); ImGui::SameLine();
+		ImGui::RadioButton(u8"黄", &espColorIndex, 2); ImGui::SameLine();
+		ImGui::RadioButton(u8"蓝", &espColorIndex, 3);
+		switch (espColorIndex)
+		{
+			case 0:
+				espColor = Color::Red;
+				break;
+			case 1:
+				espColor = Color::Orange;
+				break;
+			case 2:
+				espColor = Color::Yellow;
+				break;
+			case 3:
+				espColor = Color::Blue;
+				break;
+			default:
+				break;
+		}
+
+		ImGui::SliderInt(u8"透视范围", &espRange, 0, 500);
+
+		ImGui::TextColored(ImColor(0, 191, 255, 255), u8"射击选项");
+		ImGui::Checkbox(u8"自苗锁定  【F5】", &aimbot);
+		ImGui::SameLine();
+		ImGui::RadioButton(u8"头部", &aimbotType, 0); ImGui::SameLine();
+		ImGui::RadioButton(u8"胸部", &aimbotType, 1);
+
+		ImGui::SliderInt(u8"自苗范围", &aimbotRange, 0, 500);
+		ImGui::SliderFloat(u8"射击间隔", &fireSpeed, 0.001f, 1);
+		ImGui::Checkbox(u8"无后坐力+快速射击", &noRecoil);
+		// 无限子弹好像没伤害
+		ImGui::Checkbox(u8"无限子弹", &lockBullet);
+
+		// POLYGON速度改了走不动
+		/*ImGui::TextColored(ImColor(0, 191, 255, 255), u8"其他功能");
+		ImGui::Text(u8"人物速度");
+		ImGui::SameLine();
+		if (ImGui::Button(u8"原速"))
+		{
+			moveSpeed = 1.0f;
+			Renderer::get().increaseSpeed();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"2倍速度"))
+		{
+			moveSpeed = 2.0f;
+			Renderer::get().increaseSpeed();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"5倍速度"))
+		{
+			moveSpeed = 5.0f;
+			Renderer::get().increaseSpeed();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"10倍速度"))
+		{
+			moveSpeed = 10.0f;
+			Renderer::get().increaseSpeed();
+		}*/
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
 	}
-
-	ImGui::TextColored(ImColor(0, 191, 255, 255), u8"敌人透视颜色");
-	static int espColorIndex = 0;
-	ImGui::RadioButton(u8"红", &espColorIndex, 0); ImGui::SameLine();
-	ImGui::RadioButton(u8"橘", &espColorIndex, 1); ImGui::SameLine();
-	ImGui::RadioButton(u8"黄", &espColorIndex, 2); ImGui::SameLine();
-	ImGui::RadioButton(u8"蓝", &espColorIndex, 3);
-	switch (espColorIndex)
-	{
-		case 0:
-			espColor = Color::Red;
-			break;
-		case 1:
-			espColor = Color::Orange;
-			break;
-		case 2:
-			espColor = Color::Yellow;
-			break;
-		case 3:
-			espColor = Color::Blue;
-			break;
-		default:
-			break;
-	}
-
-	ImGui::SliderInt(u8"透视范围", &espRange, 0, 500);
-
-	ImGui::TextColored(ImColor(0, 191, 255, 255), u8"射击选项");
-	ImGui::Checkbox(u8"自苗锁定  【F5】", &aimbot);
-	ImGui::SameLine();
-	ImGui::RadioButton(u8"头部", &aimbotType, 0); ImGui::SameLine();
-	ImGui::RadioButton(u8"胸部", &aimbotType, 1);
-
-	ImGui::SliderInt(u8"自苗范围", &aimbotRange, 0, 500);
-	ImGui::SliderFloat(u8"射击间隔", &fireSpeed, 0.001f, 1);
-	ImGui::Checkbox(u8"无后坐力+快速射击", &noRecoil);
-	// 无限子弹好像没伤害
-	ImGui::Checkbox(u8"无限子弹", &lockBullet);
-
-	// POLYGON速度改了走不动
-	/*ImGui::TextColored(ImColor(0, 191, 255, 255), u8"其他功能");
-	ImGui::Text(u8"人物速度");
-	ImGui::SameLine();
-	if (ImGui::Button(u8"原速"))
-	{
-		moveSpeed = 1.0f;
-		Renderer::get().increaseSpeed();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(u8"2倍速度"))
-	{
-		moveSpeed = 2.0f;
-		Renderer::get().increaseSpeed();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(u8"5倍速度"))
-	{
-		moveSpeed = 5.0f;
-		Renderer::get().increaseSpeed();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(u8"10倍速度"))
-	{
-		moveSpeed = 10.0f;
-		Renderer::get().increaseSpeed();
-	}*/
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
 }
 
 // 热键控制
@@ -170,6 +176,25 @@ void Menu::switchState()
 	if (GetAsyncKeyState(VK_INSERT) == click)
 	{
 		showMenu = !showMenu;
+	}
+
+	// 控制窗口显示/隐藏
+	if (GetAsyncKeyState(VK_INSERT) == click)
+	{
+		showMenu = !showMenu;
+
+	#ifdef EXTERNAL_DRAW
+		if (showMenu)
+		{
+			// 显示菜单，让鼠标不穿透透明窗口
+			SetWindowLongPtr(GlobalVars::get().overlayHWindow, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
+		}
+		else
+		{
+			// 隐藏菜单，让鼠标穿透透明窗口
+			SetWindowLongPtr(GlobalVars::get().overlayHWindow, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
+		}
+	#endif
 	}
 
 	// 全开
