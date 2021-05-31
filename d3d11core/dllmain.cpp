@@ -10,10 +10,10 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 WNDPROC oWndProc;
 Present oPresent;
 
-// 事件处理
+// 窗口事件处理
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+	if (Menu::get().showMenu && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
 	{
 		return true;
 	}
@@ -21,12 +21,11 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
+// 切换最大化和小窗口会崩溃
+// Fatal error: [File:H:/UnrealEngine/Engine/Source/Runtime/Windows/D3D11RHI/Private/D3D11Util.cpp] [Line: 392] SwapChain->ResizeBuffers(0, SizeX, SizeY, RenderTargetFormat, SwapChainFlags) failed at H:/UnrealEngine/Engine/Source/Runtime/Windows/D3D11RHI/Private/D3D11Viewport.cpp:295 with error DXGI_ERROR_INVALID_CALL, (Size=3840x2066 Fullscreen=0 Format=DXGI_FORMAT_R10G10B10A2_UNORM(0x00000018)) -> (Size=2560x1440 Fullscreen=0 Format=DXGI_FORMAT_R10G10B10A2_UNORM(0x00000018))
 bool isInitD3DAndImGui = false;
 HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT Flags)
 {
-	// 会不会涉及内存管理？
-	Renderer::get().pSwapChain = pSwapChain;
-
 	if (!isInitD3DAndImGui)
 	{
 		// 初始化D3D和ImGui

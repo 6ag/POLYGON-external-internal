@@ -60,17 +60,14 @@ void Player::update()
 	int flag1 = Memory::get().read<int>(base + 0x40); // 0x40 1-人 0-未知
 	int flag2 = Memory::get().read<int>(base + 0x1A8); // 0x1A8 25-自己 24-其他人
 	int flag3 = Memory::get().read<int>(base + 0x2F0); // 0x2F0 0-自己
-	//cout << "enemy flag1=" << flag1 << ",flag2=" << flag2 << endl;
 
-	// 自己
+	// 自己 0x40-1 0x1A8-25 0x2F0-0
 	if (flag1 == 1 && flag2 == 25 && flag3 == 0)
 	{
 		//cout << "x=" << origin.x << " y=" << origin.y << " z=" << origin.z << endl;
 		type = PlayerType::oneself;
 	}
-
-	// 队友和敌人
-	if (flag1 == 1 && flag2 == 24)
+	else
 	{
 		type = PlayerType::other;
 	}

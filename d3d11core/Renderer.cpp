@@ -2,12 +2,12 @@
 #include "Memory.h"
 #include "Menu.h"
 #include "Player.h"
-#include "Config.h"
 
 void Renderer::drawFrames()
 {
+	Menu::get().imGuiStart();
 	float minCrossCenter = 99999999.0f;
-	Menu::get().drawMainMenu();
+
 	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
 
 	// 临时的最佳自瞄目标
@@ -34,40 +34,40 @@ void Renderer::drawFrames()
 			}
 
 			// 透视
-			if (GlobalVars::get().enemyList[i]->distance <= Config::get().espRange)
+			if (GlobalVars::get().enemyList[i]->distance <= Menu::get().espRange)
 			{
 				// 方框透视
-				if (Config::get().boxEsp)
+				if (Menu::get().boxEsp)
 				{
 					boxEsp(GlobalVars::get().enemyList[i]);
 				}
 
 				// 连线透视
-				if (Config::get().lineEsp)
+				if (Menu::get().lineEsp)
 				{
 					lineEsp(GlobalVars::get().enemyList[i]);
 				}
 
 				// 血量透视
-				if (Config::get().hpEsp)
+				if (Menu::get().hpEsp)
 				{
 					hpEsp(GlobalVars::get().enemyList[i]);
 				}
 
 				// 距离透视
-				if (Config::get().distanceEsp)
+				if (Menu::get().distanceEsp)
 				{
 					distanceEsp(GlobalVars::get().enemyList[i]);
 				}
 
 				// 骨骼透视
-				if (Config::get().boneEsp)
+				if (Menu::get().boneEsp)
 				{
 					if (GlobalVars::get().enemyList[i]->type == PlayerType::enemy)
 					{
-						drawMatchstickMen(GlobalVars::get().enemyList[i], matrix, Config::get().espColor);
+						drawMatchstickMen(GlobalVars::get().enemyList[i], matrix, Menu::get().espColor);
 					}
-					else if (Config::get().openFriendEsp)
+					else if (Menu::get().openFriendEsp)
 					{
 						drawMatchstickMen(GlobalVars::get().enemyList[i], matrix, Color::Green);
 					}
@@ -75,18 +75,18 @@ void Renderer::drawFrames()
 			}
 
 			// 自瞄
-			if (Config::get().aimbot && (GlobalVars::get().enemyList[i]->distance > 5 && GlobalVars::get().enemyList[i]->distance <= Config::get().aimbotRange) && lockAimTarget == nullptr)
+			if (Menu::get().aimbot && (GlobalVars::get().enemyList[i]->distance > 5 && GlobalVars::get().enemyList[i]->distance <= Menu::get().aimbotRange) && lockAimTarget == nullptr)
 			{
 				// 开了瞄准镜后，计算不准确了
 				// 准星距离，目标距离准星的距离，取所有目标中距离准星最小的。还有一种筛选自瞄目标的方式是取所有目标距离自己最近的。
-				/*float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().enemyList[i]->box.centerX;
+				float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().enemyList[i]->box.centerX;
 				float yDiff = GlobalVars::get().drawRect.centerY - GlobalVars::get().enemyList[i]->box.centerY;
 				float crossCenter = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
 				if (crossCenter < minCrossCenter)
 				{
 					minCrossCenter = crossCenter;
 					bestAimTarget = GlobalVars::get().enemyList[i];
-				}*/
+				}
 
 				// 绘制目标离准星的距离，用于测试
 				/*if (false)
@@ -99,24 +99,18 @@ void Renderer::drawFrames()
 
 					drawImText(Vector2(GlobalVars::get().enemyList[i]->box.x, GlobalVars::get().enemyList[i]->box.y + GlobalVars::get().enemyList[i]->box.height), text, Config::get().espColor);
 				}*/
-
-				if (GlobalVars::get().enemyList[i]->distance < minCrossCenter)
-				{
-					minCrossCenter = GlobalVars::get().enemyList[i]->distance;
-					bestAimTarget = GlobalVars::get().enemyList[i];
-				}
 			}
 		}
 	}
 
-	if (Config::get().aimbot && bestAimTarget != nullptr)
+	if (Menu::get().aimbot && bestAimTarget != nullptr)
 	{
 		// 锁定自瞄目标
 		lockAimTarget = bestAimTarget;
 	}
 
 	// 自瞄
-	if (Config::get().aimbot && GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+	if (Menu::get().aimbot && GetAsyncKeyState(VK_RBUTTON) & 0x8000)
 	{
 		if (lockAimTarget != nullptr)
 		{
@@ -124,7 +118,7 @@ void Renderer::drawFrames()
 			aimCounter++;
 			if (aimCounter > 15)
 			{
-				aimbot(lockAimTarget, matrix);
+				aimbot(lockAimTarget);
 				/*if (lockAimTarget->hp < 1)
 				{
 					aimCounter = 0;
@@ -132,7 +126,7 @@ void Renderer::drawFrames()
 				}
 				else
 				{
-					aimbot(lockAimTarget, matrix);
+					aimbot(lockAimTarget);
 				}*/
 			}
 		}
@@ -144,12 +138,12 @@ void Renderer::drawFrames()
 	}
 
 	// 无后座
-	if (Config::get().noRecoil || Config::get().lockBullet)
+	if (Menu::get().noRecoil || Menu::get().lockBullet)
 	{
 		noRecoil();
 	}
 
-	Menu::get().endMenuScene();
+	Menu::get().imGuiEnd();
 }
 
 static map<uintptr_t, int> baseMap;
@@ -220,43 +214,54 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 // 人物加速
 void Renderer::increaseSpeed()
 {
-	Memory::get().write<float>(GlobalVars::get().localPlayer->base + GlobalVars::get().ofs.playerSpeed_offset, Config::get().moveSpeed);
+	Memory::get().write<float>(GlobalVars::get().localPlayer->base + GlobalVars::get().ofs.playerSpeed_offset, Menu::get().moveSpeed);
 }
 
 // 子弹锁定和无后座力
 void Renderer::noRecoil()
 {
-	uintptr_t bulletBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().baseAddr + GlobalVars::get().ofs.bullet);
-	uintptr_t offset1Addr = Memory::get().read<uintptr_t>(bulletBaseAddr + GlobalVars::get().ofs.bullet_offset1);
-	uintptr_t offset2Addr = Memory::get().read<uintptr_t>(offset1Addr + GlobalVars::get().ofs.bullet_offset2);
-	uintptr_t offset3Addr = Memory::get().read<uintptr_t>(offset2Addr + GlobalVars::get().ofs.bullet_offset3);
-
-	uintptr_t gun1Addr = Memory::get().read<uintptr_t>(offset3Addr);
-	uintptr_t gun2Addr = Memory::get().read<uintptr_t>(offset3Addr + 8);
-	uintptr_t gun3Addr = Memory::get().read<uintptr_t>(offset3Addr + 16);
+	// 057E0360 -> 0 -> A0 -> 580 -> 128 -> 300 第一把枪子弹数量 int
+	// 057E0360 -> 0 -> A0 -> 580 -> 130 -> 300 第二把枪子弹数量 int
+	// 057D5EF0 -> 30 -> 250 -> 580 -> 128 -> 2C0 第一把枪射速，越小越快。float
+	// 057D5EF0 -> 30 -> 250 -> 580 -> 130 -> 2C0 第一把枪射速，越小越快。float
+	// 057D5EF0 -> 30 -> 260 -> 580 -> 128 -> 2C8 第一把枪后坐力，设为0没后坐力。float
+	// 057D5EF0 -> 30 -> 260 -> 580 -> 130 -> 2C8 第一把枪后坐力，设为0没后坐力。float
 
 	// 子弹锁定
-	if (Config::get().lockBullet)
+	if (Menu::get().lockBullet)
 	{
-		Memory::get().write<int>(gun1Addr + GlobalVars::get().ofs.bullet_count_offset, 100);
-		Memory::get().write<int>(gun2Addr + GlobalVars::get().ofs.bullet_count_offset, 100);
-		Memory::get().write<int>(gun3Addr + GlobalVars::get().ofs.bullet_count_offset, 100);
+		uintptr_t bulletBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().baseAddr + 0x057E0360);
+		uintptr_t bulletOffset1 = Memory::get().read<uintptr_t>(bulletBaseAddr);
+		uintptr_t bulletOffset2 = Memory::get().read<uintptr_t>(bulletOffset1 + 0xA0);
+		uintptr_t bulletOffset3 = Memory::get().read<uintptr_t>(bulletOffset2 + 0x580);
+		uintptr_t bulletOffset4_1 = Memory::get().read<uintptr_t>(bulletOffset3 + 0x128);
+		uintptr_t bulletOffset4_2 = Memory::get().read<uintptr_t>(bulletOffset3 + 0x130);
+
+		Memory::get().write<int>(bulletOffset4_1 + 0x300, 30);
+		Memory::get().write<int>(bulletOffset4_2 + 0x300, 7);
 	}
 
 	// 无后坐力
-	if (Config::get().noRecoil)
+	if (Menu::get().noRecoil)
 	{
-		Memory::get().write<int>(gun1Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_recoil_x_offset, 0);
-		Memory::get().write<int>(gun1Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_recoil_y_offset, 0);
-		Memory::get().write<int>(gun1Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_jitter_offset, 0);
+		uintptr_t gunBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().baseAddr + 0x057D5EF0);
+		uintptr_t gunFiringSpeedOffset1 = Memory::get().read<uintptr_t>(gunBaseAddr + 0x30);
+		uintptr_t gunFiringSpeedOffset2 = Memory::get().read<uintptr_t>(gunFiringSpeedOffset1 + 0x250);
+		uintptr_t gunFiringSpeedOffset3 = Memory::get().read<uintptr_t>(gunFiringSpeedOffset2 + 0x580);
+		uintptr_t gunFiringSpeedOffset4_1 = Memory::get().read<uintptr_t>(gunFiringSpeedOffset3 + 0x128);
+		uintptr_t gunFiringSpeedOffset4_2 = Memory::get().read<uintptr_t>(gunFiringSpeedOffset3 + 0x130);
 
-		Memory::get().write<int>(gun2Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_recoil_x_offset, 0);
-		Memory::get().write<int>(gun2Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_recoil_y_offset, 0);
-		Memory::get().write<int>(gun2Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_jitter_offset, 0);
+		uintptr_t gunNorecoilOffset2 = Memory::get().read<uintptr_t>(gunFiringSpeedOffset1 + 0x260);
+		uintptr_t gunNorecoilOffset3 = Memory::get().read<uintptr_t>(gunNorecoilOffset2 + 0x580);
+		uintptr_t gunNorecoilOffset4_1 = Memory::get().read<uintptr_t>(gunNorecoilOffset3 + 0x128);
+		uintptr_t gunNorecoilOffset4_2 = Memory::get().read<uintptr_t>(gunNorecoilOffset3 + 0x130);
 
-		Memory::get().write<int>(gun3Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_recoil_x_offset, 0);
-		Memory::get().write<int>(gun3Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_recoil_y_offset, 0);
-		Memory::get().write<int>(gun3Addr + GlobalVars::get().ofs.bullet_count_offset + GlobalVars::get().ofs.gun_jitter_offset, 0);
+		Memory::get().write<float>(gunNorecoilOffset4_1 + 0x2C8, 0.0f);
+		Memory::get().write<float>(gunNorecoilOffset4_2 + 0x2C8, 0.0f);
+
+		// 射速
+		Memory::get().write<float>(gunFiringSpeedOffset4_1 + 0x2C0, Menu::get().fireSpeed);
+		Memory::get().write<float>(gunFiringSpeedOffset4_2 + 0x2C0, Menu::get().fireSpeed);
 	}
 }
 
@@ -266,8 +271,10 @@ bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matr
 	if (w < 0.001f)
 		return false;
 
+	// 目标和摄像机的距离
 	player->distance = w / 100.0f;
 
+	// 第一人称游戏有时候看不到自己身上的一些地址，可以调整算法，让地址显示出来
 	/*float x1 = (pos.x + 0);
 	float x2 = (pos.x + 200);
 	float x3 = (pos.x + 200);
@@ -304,9 +311,9 @@ void Renderer::boxEsp(shared_ptr<Player> player)
 	//float thikness = player->distance <= 1200.f ? thikness = 1.f : thikness = 0.5f;
 	if (player->type == PlayerType::enemy)
 	{
-		drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), Config::get().espColor);
+		drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), Menu::get().espColor);
 	}
-	else if (Config::get().openFriendEsp)
+	else if (Menu::get().openFriendEsp)
 	{
 		drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), Color::Green);
 	}
@@ -316,9 +323,9 @@ void Renderer::lineEsp(shared_ptr<Player> player)
 {
 	if (player->type == PlayerType::enemy)
 	{
-		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, 0), Vector2(player->box.centerX, player->box.y), Config::get().espColor);
+		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, 0), Vector2(player->box.centerX, player->box.y), Menu::get().espColor);
 	}
-	else if (Config::get().openFriendEsp)
+	else if (Menu::get().openFriendEsp)
 	{
 		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, 0), Vector2(player->box.centerX, player->box.y), Color::Green);
 	}
@@ -349,39 +356,35 @@ void Renderer::distanceEsp(shared_ptr<Player> player)
 	sprintf_s(text, "%.0fm", player->distance);
 	if (player->type == PlayerType::enemy)
 	{
-		drawImText(Vector2(player->box.x, player->box.y + player->box.height), text, Config::get().espColor);
+		drawImText(Vector2(player->box.x, player->box.y + player->box.height), text, Menu::get().espColor);
 	}
-	else if (Config::get().openFriendEsp)
+	else if (Menu::get().openFriendEsp)
 	{
 		drawImText(Vector2(player->box.x, player->box.y + player->box.height), text, Color::Green);
 	}
 }
 
-void Renderer::aimbot(shared_ptr<Player> player, view_matrix_t matrix)
+void Renderer::aimbot(shared_ptr<Player> player)
 {
-	// 重新读数据，这样延迟小，但消耗大
-	view_matrix_t matrix1 = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
+	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
 	uintptr_t meshAddr = Memory::get().read<uintptr_t>(player->base + GlobalVars::get().ofs.playerMesh_offset);
 	uintptr_t skeletonArrayAddr = Memory::get().read<uintptr_t>(meshAddr + GlobalVars::get().ofs.playerBoneArray_offset);
 	uintptr_t skeletonMatrixAddr = meshAddr + GlobalVars::get().ofs.playerComponentToWorld_offset;
-
-	//uintptr_t skeletonMatrixAddr = player->skeletonMatrixAddr;
-	//uintptr_t skeletonArrayAddr = player->skeletonArrayAddr;
 
 	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
 	Vector2 bone2D;
 
 	int index = 5;
-	if (Config::get().aimbotType == 0)
+	if (Menu::get().aimbotType == 0)
 	{
 		index = 5;
 	}
-	else if (Config::get().aimbotType == 1)
+	else if (Menu::get().aimbotType == 1)
 	{
 		index = 3;
 	}
 
-	if (aimbootWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48), bone2D, matrix1))
+	if (aimbootWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48), bone2D, matrix))
 	{
 		//cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
 		mouse_event(MOUSEEVENTF_MOVE, bone2D.x, bone2D.y, 0, 0);
@@ -499,7 +502,7 @@ void Renderer::drawMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix
 														{
 															if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 41 * 48), boneData.rightAnkle, matrix))
 															{
-																drawImCircle(Vector2(boneData.head.x, boneData.head.y), player->box.width * 0.15f, player->box.width * 0.2f, color);
+																drawImCircle(boneData.head, player->box.width * 0.15f, player->box.width * 0.2f, color);
 																drawImLine(boneData.chest, boneData.pelvis, color);
 																drawImLine(boneData.chest, boneData.leftShoulder, color);
 																drawImLine(boneData.chest, boneData.rightShoulder, color);
@@ -545,7 +548,7 @@ void Renderer::drawTest(shared_ptr<Player> player, view_matrix_t matrix, Color c
 			// 绘制文本来测试
 			char text[5];
 			sprintf_s(text, "%d", i);
-			drawImText(bone2D, text, Config::get().espColor);
+			drawImText(bone2D, text, Menu::get().espColor);
 		}
 	}
 }

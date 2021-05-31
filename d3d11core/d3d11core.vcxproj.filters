@@ -19,6 +19,12 @@
     <Filter Include="kiero">
       <UniqueIdentifier>{3614bb92-5f30-49c0-84df-198e89a6ece6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\common">
+      <UniqueIdentifier>{e406a727-99d8-4f99-befc-006f9b5f10d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\common">
+      <UniqueIdentifier>{4fe8aceb-2f92-4faa-9e45-a832d1e83384}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -63,13 +69,7 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Color.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="GlobalVars.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Menu.cpp">
@@ -80,6 +80,12 @@
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp">
+      <Filter>源文件\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -134,19 +140,7 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="baidu_font.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Color.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Config.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="GlobalVars.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Menu.h">
@@ -158,8 +152,17 @@
     <ClInclude Include="Renderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="baidu_font.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>头文件\common</Filter>
+    </ClInclude>
     <ClInclude Include="Singleton.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

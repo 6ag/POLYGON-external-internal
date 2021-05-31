@@ -31,12 +31,10 @@ public:
 	// 绘制文字字体大小
 	const int fontSize = 20;
 
-	//dx11驱动
+	// dx11驱动
 	ID3D11Device * pD3DDevice = nullptr;
-	//dx11上下文
+	// dx11上下文
 	ID3D11DeviceContext * pD3DDeviceContext = nullptr;
-	//dx交换链
-	IDXGISwapChain * pSwapChain = nullptr;
 	ID3D11RenderTargetView * pMainRenderTargetView = nullptr;
 
 	ImDrawList * pImBuffer = nullptr;
@@ -49,7 +47,7 @@ private:
 	void hpEsp(shared_ptr<Player> player);
 	void distanceEsp(shared_ptr<Player> player);
 
-	void aimbot(shared_ptr<Player> player, view_matrix_t matrix);
+	void aimbot(shared_ptr<Player> player);
 	void drawTest(shared_ptr<Player> player, view_matrix_t matrix, Color color);
 	void drawMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix, Color color);
 	bool aimbootWorldToScreen(const Vector2 & screen_size, const Vector3 & pos, Vector2 & retPos, view_matrix_t matrix);

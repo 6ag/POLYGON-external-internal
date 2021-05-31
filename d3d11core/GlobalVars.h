@@ -92,6 +92,21 @@ struct Rect
 		centerX = width * 0.5f;
 		centerY = height * 0.5f;
 	}
+
+	Vector2 getPoint()
+	{
+		return Vector2(x, y);
+	}
+
+	Vector2 getCenter()
+	{
+		return Vector2(centerX, centerY);
+	}
+
+	Vector2 getSize()
+	{
+		return Vector2(width, height);
+	}
 };
 
 // 摄像机矩阵
@@ -236,21 +251,14 @@ public:
 		DWORD playerComponentToWorld_offset = 0x1C0; // 玩家阵列偏移
 		DWORD playerBoneArray_offset = 0x4A0; // 玩家骨骼数组偏移
 
+		DWORD playerHp_offset = 0x7C4; // 血量偏移-错误
 
-
-		DWORD playerHp_offset = 0x7C4; // 血量偏移
-		DWORD playerFlag1_offset = 0x108; // 玩家类型偏移  10-人 15-枪 100-箱子
-		DWORD playerFlag2_offset = 0x50; // 玩家类型偏移
-
-		DWORD bullet = 0x02AEFFB8;
-		DWORD bullet_offset1 = 0xF0;
-		DWORD bullet_offset2 = 0x3D8;
-		DWORD bullet_offset3 = 0x148; // 武器1，每个武器偏移8字节
-		DWORD bullet_count_offset = 0x568; // 枪械结构里的子弹数量偏移
-		DWORD gun_recoil_x_offset = 0x68; // 水平方向后坐力，在子弹数量偏移基础上增加偏移量
-		DWORD gun_recoil_y_offset = 0x30; // 垂直方向后坐力，在子弹数量偏移基础上增加偏移量
-		DWORD gun_jitter_offset = 0x28; // 枪械抖动，在子弹数量偏移基础上增加偏移量
-
+		// 057E0360 -> 0 -> A0 -> 580 -> 128 -> 300 第一把枪子弹数量 int
+		// 057E0360 -> 0 -> A0 -> 580 -> 130 -> 300 第二把枪子弹数量 int
+		// 057D5EF0 -> 30 -> 250 -> 580 -> 128 -> 2C0 第一把枪射速，越小越快。float
+		// 057D5EF0 -> 30 -> 250 -> 580 -> 130 -> 2C0 第一把枪射速，越小越快。float
+		// 057D5EF0 -> 30 -> 260 -> 580 -> 128 -> 2C8 第一把枪后坐力，设为0没后坐力。float
+		// 057D5EF0 -> 30 -> 260 -> 580 -> 130 -> 2C8 第一把枪后坐力，设为0没后坐力。float
 	} ofs;
 
 	// 窗口区域
