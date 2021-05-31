@@ -10,12 +10,41 @@ extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam
 WNDPROC oWndProc;
 Present oPresent;
 
+void CreateRenderTarget()
+{
+	ID3D11Texture2D * pBackBuffer;
+	Renderer::get().pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+	Renderer::get().pD3DDevice->CreateRenderTargetView(pBackBuffer, NULL, &Renderer::get().pMainRenderTargetView);
+	pBackBuffer->Release();
+}
+
+void CleanupRenderTarget()
+{
+	if (Renderer::get().pMainRenderTargetView)
+	{
+		Renderer::get().pMainRenderTargetView->Release();
+		Renderer::get().pMainRenderTargetView = nullptr;
+	}
+}
+
 // 窗口事件处理
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (Menu::get().showMenu && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
 	{
 		return true;
+	}
+
+	// 防止窗口缩放崩溃。窗口尺寸变化了，游戏画面尺寸没变，只是为了防止崩溃
+	if (uMsg == WM_SIZE)
+	{
+		if (Renderer::get().pD3DDevice != NULL && wParam != SIZE_MINIMIZED)
+		{
+			CleanupRenderTarget();
+			Renderer::get().pSwapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
+			CreateRenderTarget();
+		}
+		return false;
 	}
 
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
