@@ -25,14 +25,6 @@ void Renderer::drawFrames()
 		if (playerWorldToScreen(GlobalVars::get().enemyList[i], matrix))
 		{
 			//baseAddrEsp(GlobalVars::get().enemyList[i]);
-
-			// 骨骼计算失败，过滤死人
-			if (!caluMatchstickMen(GlobalVars::get().enemyList[i], matrix))
-			{
-				//cout << "计算失败" << endl;
-				continue;
-			}
-
 			// 透视
 			if (GlobalVars::get().enemyList[i]->distance <= Menu::get().espRange)
 			{
@@ -371,7 +363,7 @@ void Renderer::aimbot(shared_ptr<Player> player)
 	uintptr_t skeletonArrayAddr = Memory::get().read<uintptr_t>(meshAddr + GlobalVars::get().ofs.playerBoneArray_offset);
 	uintptr_t skeletonMatrixAddr = meshAddr + GlobalVars::get().ofs.playerComponentToWorld_offset;
 
-	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
+	Vector2 screenSize = GlobalVars::get().drawRect.getSize();
 	Vector2 bone2D;
 
 	int index = 5;
@@ -405,63 +397,6 @@ bool Renderer::aimbootWorldToScreen(const Vector2 & screen_size, const Vector3 &
 	retPos.y = y;
 
 	return true;
-}
-
-// 计算骨头人骨骼
-bool Renderer::caluMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix)
-{
-	uintptr_t skeletonMatrixAddr = player->skeletonMatrixAddr;
-	uintptr_t skeletonArrayAddr = player->skeletonArrayAddr;
-	BoneData boneData;
-	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
-
-	if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 5 * 48), boneData.head, matrix))
-	{
-		if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 3 * 48), boneData.chest, matrix))
-		{
-			if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 1 * 48), boneData.pelvis, matrix))
-			{
-				if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 10 * 48), boneData.leftShoulder, matrix))
-				{
-					if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 25 * 48), boneData.rightShoulder, matrix))
-					{
-						if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 11 * 48), boneData.leftElbow, matrix))
-						{
-							if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 26 * 48), boneData.rightElbow, matrix))
-							{
-								if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 12 * 48), boneData.leftWrist, matrix))
-								{
-									if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 27 * 48), boneData.rightWrist, matrix))
-									{
-										if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 44 * 48), boneData.leftThigh, matrix))
-										{
-											if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 39 * 48), boneData.rightThigh, matrix))
-											{
-												if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 45 * 48), boneData.leftKnee, matrix))
-												{
-													if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 40 * 48), boneData.rightKnee, matrix))
-													{
-														if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 46 * 48), boneData.leftAnkle, matrix))
-														{
-															if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + 41 * 48), boneData.rightAnkle, matrix))
-															{
-																return true;
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return false;
 }
 
 // 绘制火柴人
