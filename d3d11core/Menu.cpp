@@ -7,6 +7,7 @@ void Menu::init()
 {
 	if (!isInit)
 	{
+		// imgui结构检查
 		IMGUI_CHECKVERSION();
 		// 初始化imgui
 		ImGui::CreateContext();
@@ -229,8 +230,16 @@ void Menu::imGuiEnd()
 	ImGui::Render();
 	// 绑定到渲染管线
 	Renderer::get().pD3DDeviceContext->OMSetRenderTargets(1, &Renderer::get().pMainRenderTargetView, NULL);
+#ifdef EXTERNAL_DRAW
+	// 清空屏幕
+	Renderer::get().pD3DDeviceContext->ClearRenderTargetView(Renderer::get().pMainRenderTargetView, (float *)&clearColor);
+#endif
 	// 将imgui的绘制数据绘制到dx11
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+#ifdef EXTERNAL_DRAW
+	// 呈现，开启垂直同步
+	Renderer::get().pSwapChain->Present(1, 0);
+#endif
 }
 
 // 自定义ImGui样式

@@ -29,7 +29,15 @@
 
 #include "Singleton.h"
 
+// 外部宏，有定义宏说明是外部绘制
+#define EXTERNAL_DRAW
+
 // 进程和窗口的一些信息
+#ifdef EXTERNAL_DRAW
+#define OVERLAY_WIN_CLASS "QQDLG"
+#define OVERLAY_WIN_NAME "QQVip"
+#endif
+
 #define GAME_WIN_CLASS "UnrealWindow"
 #define GAME_WIN_NAME "POLYGON  "
 #define PROCESS_NAME "POLYGON-Win64-Shipping.exe"
@@ -212,6 +220,11 @@ public:
 	DWORD pId;
 	// 游戏窗口的句柄
 	HWND hWindow;
+
+	// 游戏进程句柄-外部
+	HANDLE hProcess;
+	// 遮罩窗口的句柄-外部
+	HWND overlayHWindow;
 
 	// 游戏模块基址，其实就是模块句柄
 	uintptr_t baseAddr;

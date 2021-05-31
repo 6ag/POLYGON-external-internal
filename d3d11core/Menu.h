@@ -31,6 +31,11 @@ public:
 	ImFont * pMenuFont = nullptr;
 	// 透视文字字体
 	ImFont * pEspFont = nullptr;
+#ifdef EXTERNAL_DRAW
+	// dx刷新颜色
+	ImVec4 clearColor = ImGui::ColorConvertU32ToFloat4(ImColor(0, 0, 0, 0));
+#endif
+
 private:
 	bool isInit = false;
 

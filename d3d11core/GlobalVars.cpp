@@ -18,6 +18,46 @@ void GlobalVars::updateWorldAddrAndViewMatrixAddr()
 
 void GlobalVars::updateDrawRect()
 {
+#ifdef EXTERNAL_DRAW
+	// Rect
+	// 左是矩形左边界离屏幕最左边的距离
+	// 上是矩形上边界离屏幕最上边的距离
+	// 右是矩形右边界离屏幕最左边的距离
+	// 下是矩形下边界离屏幕最上边的距离
+	// 这里获取到的尺寸，是加上了被Windows缩放的部分
+	// 比如我屏幕设置缩放150%，那我游戏设置为1280*720，GetClientRect最终获取到的数值是(1280*1.5)*(720*1.5)=1920*1080
+	RECT marginRect;
+	RECT overlayRect;
+	GetWindowRect(GlobalVars::get().hWindow, &marginRect);
+	GetClientRect(GlobalVars::get().hWindow, &overlayRect);
+
+	// 窗口模式，窗口左边的边框尺寸
+	int winBorderLeft = ((marginRect.right - marginRect.left) - (overlayRect.right - overlayRect.left)) * 0.5;
+	// 窗口模式，窗口顶部的边框尺寸，也就是窗口标题栏高度
+	int winBorderTop = (marginRect.bottom - marginRect.top) - (overlayRect.bottom - overlayRect.top) - winBorderLeft;
+
+	/*cout << "整个窗口.顶 = " << marginRect.top << endl;
+	cout << "整个窗口.底 = " << marginRect.bottom << endl;
+	cout << "整个窗口.左 = " << marginRect.left << endl;
+	cout << "整个窗口.右 = " << marginRect.right << endl;
+	cout << "客户区窗口.顶 = " << overlayRect.top << endl;
+	cout << "客户区窗口.底 = " << overlayRect.bottom << endl;
+	cout << "客户区窗口.左 = " << overlayRect.left << endl;
+	cout << "客户区窗口.右 = " << overlayRect.right << endl;
+	cout << "winBorderLeft = " << winBorderLeft << endl;
+	cout << "winBorderTop = " << winBorderTop << endl;*/
+
+	// 计算绘制窗口区域
+	GlobalVars::get().drawRect = Rect(marginRect.left + winBorderLeft,
+									  marginRect.top + winBorderTop,
+									  overlayRect.right - overlayRect.left,
+									  overlayRect.bottom - overlayRect.top);
+
+	/*cout << "GlobalVars::get().drawRect.x = " << GlobalVars::get().drawRect.x << endl;
+	cout << "GlobalVars::get().drawRect.y = " << GlobalVars::get().drawRect.y << endl;
+	cout << "GlobalVars::get().drawRect.width = " << GlobalVars::get().drawRect.width << endl;
+	cout << "GlobalVars::get().drawRect.height = " << GlobalVars::get().drawRect.height << endl;*/
+#else
 	RECT gameWindowRect;
 	POINT point = { 0 };
 	GetClientRect(GlobalVars::get().hWindow, &gameWindowRect);
@@ -31,6 +71,7 @@ void GlobalVars::updateDrawRect()
 	cout << "游戏窗口.y = " << GlobalVars::get().drawRect.y << endl;
 	cout << "游戏窗口.width = " << GlobalVars::get().drawRect.width << endl;
 	cout << "游戏窗口.height = " << GlobalVars::get().drawRect.height << endl;*/
+#endif
 }
 
 void GlobalVars::updatePlayerList()
