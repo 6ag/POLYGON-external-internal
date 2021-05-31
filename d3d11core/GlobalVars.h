@@ -264,10 +264,9 @@ public:
 	// 窗口区域
 	Rect drawRect;
 
-	// 还活着的敌人数量，暂时把队友也放进去了，用标识来区分
-	int activeEnemyCounter = 0;
-	// 敌人数组
-	shared_ptr<Player> enemyList[1000] = { 0 };
+	// 玩家列表，包括敌人和队友，把自己除外了
+	vector<shared_ptr<Player>> playerList;
+
 	// 自己
 	shared_ptr<Player> localPlayer = nullptr;
 

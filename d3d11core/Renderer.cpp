@@ -20,64 +20,64 @@ void Renderer::drawFrames()
 	}*/
 
 	//cout << GlobalVars::get().activeEnemyCounter << endl;
-	for (int i = 0; i < GlobalVars::get().activeEnemyCounter; i++)
+	for (int i = 0; i < GlobalVars::get().playerList.size(); i++)
 	{
-		if (playerWorldToScreen(GlobalVars::get().enemyList[i], matrix))
+		if (playerWorldToScreen(GlobalVars::get().playerList[i], matrix))
 		{
 			//baseAddrEsp(GlobalVars::get().enemyList[i]);
 			// 透视
-			if (GlobalVars::get().enemyList[i]->distance <= Menu::get().espRange)
+			if (GlobalVars::get().playerList[i]->distance <= Menu::get().espRange)
 			{
 				// 方框透视
 				if (Menu::get().boxEsp)
 				{
-					boxEsp(GlobalVars::get().enemyList[i]);
+					boxEsp(GlobalVars::get().playerList[i]);
 				}
 
 				// 连线透视
 				if (Menu::get().lineEsp)
 				{
-					lineEsp(GlobalVars::get().enemyList[i]);
+					lineEsp(GlobalVars::get().playerList[i]);
 				}
 
 				// 血量透视
 				if (Menu::get().hpEsp)
 				{
-					hpEsp(GlobalVars::get().enemyList[i]);
+					hpEsp(GlobalVars::get().playerList[i]);
 				}
 
 				// 距离透视
 				if (Menu::get().distanceEsp)
 				{
-					distanceEsp(GlobalVars::get().enemyList[i]);
+					distanceEsp(GlobalVars::get().playerList[i]);
 				}
 
 				// 骨骼透视
 				if (Menu::get().boneEsp)
 				{
-					if (GlobalVars::get().enemyList[i]->type == PlayerType::enemy)
+					if (GlobalVars::get().playerList[i]->type == PlayerType::enemy)
 					{
-						drawMatchstickMen(GlobalVars::get().enemyList[i], matrix, Menu::get().espColor);
+						drawMatchstickMen(GlobalVars::get().playerList[i], matrix, Menu::get().espColor);
 					}
 					else if (Menu::get().openFriendEsp)
 					{
-						drawMatchstickMen(GlobalVars::get().enemyList[i], matrix, Color::Green);
+						drawMatchstickMen(GlobalVars::get().playerList[i], matrix, Color::Green);
 					}
 				}
 			}
 
 			// 自瞄
-			if (Menu::get().aimbot && (GlobalVars::get().enemyList[i]->distance > 5 && GlobalVars::get().enemyList[i]->distance <= Menu::get().aimbotRange) && lockAimTarget == nullptr)
+			if (Menu::get().aimbot && (GlobalVars::get().playerList[i]->distance > 5 && GlobalVars::get().playerList[i]->distance <= Menu::get().aimbotRange) && lockAimTarget == nullptr)
 			{
 				// 开了瞄准镜后，计算不准确了
 				// 准星距离，目标距离准星的距离，取所有目标中距离准星最小的。还有一种筛选自瞄目标的方式是取所有目标距离自己最近的。
-				float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().enemyList[i]->box.centerX;
-				float yDiff = GlobalVars::get().drawRect.centerY - GlobalVars::get().enemyList[i]->box.centerY;
+				float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().playerList[i]->box.centerX;
+				float yDiff = GlobalVars::get().drawRect.centerY - GlobalVars::get().playerList[i]->box.centerY;
 				float crossCenter = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
 				if (crossCenter < minCrossCenter)
 				{
 					minCrossCenter = crossCenter;
-					bestAimTarget = GlobalVars::get().enemyList[i];
+					bestAimTarget = GlobalVars::get().playerList[i];
 				}
 
 				// 绘制目标离准星的距离，用于测试
@@ -89,7 +89,7 @@ void Renderer::drawFrames()
 							  GlobalVars::get().enemyList[i]->box.centerX,
 							  GlobalVars::get().enemyList[i]->box.centerY);
 
-					drawImText(Vector2(GlobalVars::get().enemyList[i]->box.x, GlobalVars::get().enemyList[i]->box.y + GlobalVars::get().enemyList[i]->box.height), text, Config::get().espColor);
+					drawImText(Vector2(GlobalVars::get().playerList[i]->box.x, GlobalVars::get().playerList[i]->box.y + GlobalVars::get().playerList[i]->box.height), text, Config::get().espColor);
 				}*/
 			}
 		}
@@ -102,7 +102,7 @@ void Renderer::drawFrames()
 	}
 
 	// 自瞄
-	if (Menu::get().aimbot && GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+	if (Menu::get().aimbot && GetAsyncKeyState(VK_RBUTTON) == -32768)
 	{
 		if (lockAimTarget != nullptr)
 		{

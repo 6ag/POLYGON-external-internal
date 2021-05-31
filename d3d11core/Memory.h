@@ -18,13 +18,14 @@ template<class T> inline T Memory::read(uintptr_t addres)
 	{
 		return *(T *)addres;
 	}
+	T buffer{};
+	return buffer;
 }
 
 template<class T> inline void Memory::write(uintptr_t addres, T value)
 {
-	if (IsBadReadPtr((PVOID)addres, sizeof(T)))
+	if (!IsBadReadPtr((PVOID)addres, sizeof(T)))
 	{
-		return;
+		*(T *)addres = value;
 	}
-	*(T *)addres = value;
 }

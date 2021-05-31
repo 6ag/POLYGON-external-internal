@@ -34,13 +34,11 @@ HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT
 			Renderer::get().pD3DDevice->GetImmediateContext(&Renderer::get().pD3DDeviceContext);
 			DXGI_SWAP_CHAIN_DESC sd;
 			pSwapChain->GetDesc(&sd);
-			// 为什么这里要保存？可以直接FindWindow获取的
 			GlobalVars::get().hWindow = sd.OutputWindow;
 			ID3D11Texture2D * pBackBuffer;
 			pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *)&pBackBuffer);
 			Renderer::get().pD3DDevice->CreateRenderTargetView(pBackBuffer, NULL, &Renderer::get().pMainRenderTargetView);
 			pBackBuffer->Release();
-
 			oWndProc = (WNDPROC)SetWindowLongPtr(GlobalVars::get().hWindow, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
 			// 初始化imgui
@@ -57,8 +55,8 @@ HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT
 
 	// 更新世界地址和矩阵地址
 	GlobalVars::get().updateWorldAddrAndViewMatrixAddr();
-	// 更新绘制窗口尺寸
-	GlobalVars::get().updateDrawRect();
+	// 更新绘制窗口尺寸，不用一直更新。修改窗口尺寸会闪退
+	//GlobalVars::get().updateDrawRect();
 	// 更新玩家信息
 	GlobalVars::get().updatePlayerList();
 	// 绘制开始

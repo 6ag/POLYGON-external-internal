@@ -53,14 +53,8 @@ void Menu::init()
 
 void Menu::imGuiStart()
 {
-	// 控制窗口显示/隐藏
-	if (GetAsyncKeyState(VK_INSERT) & 1)
-	{
-		showMenu = !showMenu;
-	}
-
 	// 状态切换，鼠标按下，判断条件也会通过
-	// switchState();
+	switchState();
 
 	// 创建dx11着色器以及字体
 	ImGui_ImplDX11_NewFrame();
@@ -75,7 +69,7 @@ void Menu::imGuiStart()
 		return;
 	}
 
-	ImGui::Begin(u8"我爱中国", &showMenu, ImGuiCond_Always | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar);
+	ImGui::Begin(u8"我爱中国", &showMenu, ImGuiCond_Always | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar);
 	ImGui::TextColored(ImColor(220, 20, 60, 255), u8"【Ins】隐藏/显示菜单");
 	ImGui::TextColored(ImColor(0, 191, 255, 255), u8"透视选项");
 	if (ImGui::BeginTable("split", 2))
@@ -124,9 +118,11 @@ void Menu::imGuiStart()
 	ImGui::SliderInt(u8"自苗范围", &aimbotRange, 0, 500);
 	ImGui::SliderFloat(u8"射击间隔", &fireSpeed, 0.001f, 1);
 	ImGui::Checkbox(u8"无后坐力+快速射击", &noRecoil);
+	// 无限子弹好像没伤害
 	ImGui::Checkbox(u8"无限子弹", &lockBullet);
 
-	ImGui::TextColored(ImColor(0, 191, 255, 255), u8"其他功能");
+	// POLYGON速度改了走不动
+	/*ImGui::TextColored(ImColor(0, 191, 255, 255), u8"其他功能");
 	ImGui::Text(u8"人物速度");
 	ImGui::SameLine();
 	if (ImGui::Button(u8"原速"))
@@ -151,16 +147,25 @@ void Menu::imGuiStart()
 	{
 		moveSpeed = 10.0f;
 		Renderer::get().increaseSpeed();
-	}
+	}*/
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 }
 
-// 热键控制 & 0x8000：自瞄 & 1：菜单切换
+// 热键控制 -32767单点 -32768按下
 void Menu::switchState()
 {
+	SHORT pressed = -32768;
+	SHORT click = -32767;
+
+	// 控制窗口显示/隐藏
+	if (GetAsyncKeyState(VK_INSERT) == click)
+	{
+		showMenu = !showMenu;
+	}
+
 	// 全开
-	if (GetAsyncKeyState(VK_HOME) & 1)
+	if (GetAsyncKeyState(VK_HOME) == click)
 	{
 		boxEsp = true;
 		lineEsp = true;
@@ -168,10 +173,12 @@ void Menu::switchState()
 		distanceEsp = true;
 		openFriendEsp = true;
 		aimbot = true;
+		noRecoil = true;
+		lockBullet = true;
 	}
 
 	// 全关
-	if (GetAsyncKeyState(VK_END) & 1)
+	if (GetAsyncKeyState(VK_END) == click)
 	{
 		boxEsp = false;
 		lineEsp = false;
@@ -179,29 +186,31 @@ void Menu::switchState()
 		distanceEsp = false;
 		openFriendEsp = false;
 		aimbot = false;
+		noRecoil = false;
+		lockBullet = false;
 	}
 
-	if (GetAsyncKeyState(VK_F1) & 1)
+	if (GetAsyncKeyState(VK_F1) == click)
 	{
 		boxEsp = !boxEsp;
 	}
 
-	if (GetAsyncKeyState(VK_F2) & 1)
+	if (GetAsyncKeyState(VK_F2) == click)
 	{
 		lineEsp = !lineEsp;
 	}
 
-	if (GetAsyncKeyState(VK_F3) & 1)
+	if (GetAsyncKeyState(VK_F3) == click)
 	{
 		boneEsp = !boneEsp;
 	}
 
-	if (GetAsyncKeyState(VK_F4) & 1)
+	if (GetAsyncKeyState(VK_F4) == click)
 	{
 		distanceEsp = !distanceEsp;
 	}
 
-	if (GetAsyncKeyState(VK_F5) & 1)
+	if (GetAsyncKeyState(VK_F5) == click)
 	{
 		aimbot = !aimbot;
 	}

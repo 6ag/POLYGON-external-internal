@@ -43,8 +43,7 @@ void GlobalVars::updatePlayerList()
 	cout << "actorCount = " << GlobalVars::get().actorCount << endl;
 	cout << "actorsAddr = " << GlobalVars::get().actorsAddr << endl;*/
 
-	activeEnemyCounter = 0;
-
+	playerList.clear();
 	for (int i = 0; i < GlobalVars::get().actorCount; i++)
 	{
 		uintptr_t actorBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().actorsAddr + i * 0x8);
@@ -59,8 +58,7 @@ void GlobalVars::updatePlayerList()
 		// 区分自己和其他人
 		if (player->type == PlayerType::other)
 		{
-			enemyList[activeEnemyCounter] = player;
-			activeEnemyCounter++;
+			playerList.push_back(player);
 		}
 		if (player->type == PlayerType::oneself)
 		{
@@ -69,22 +67,22 @@ void GlobalVars::updatePlayerList()
 	}
 
 	// 区分敌人和队友
-	for (int i = 0; i < activeEnemyCounter; i++)
+	for (int i = 0; i < playerList.size(); i++)
 	{
-		if (localPlayer == nullptr || enemyList[i] == nullptr)
+		if (localPlayer == nullptr || playerList[i] == nullptr)
 		{
 			continue;
 		}
-		if (enemyList[i]->bpCName == localPlayer->bpCName)
+
+		if (playerList[i]->bpCName == localPlayer->bpCName)
 		{
-			enemyList[i]->type = PlayerType::team;
+			playerList[i]->type = PlayerType::team;
 		}
 		else
 		{
-			enemyList[i]->type = PlayerType::enemy;
+			playerList[i]->type = PlayerType::enemy;
 		}
 	}
-
 }
 
 void GlobalVars::printOffsets()
