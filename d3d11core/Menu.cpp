@@ -3,10 +3,36 @@
 #include "baidu_font.h"
 #include "Renderer.h"
 
+//************************************
+// Method:      getDpi
+// Description: 获取系统dpi（缩放比例）
+// Author:      xxx
+// Date:        2020/09/23
+// Returns:     比例 
+//************************************
+double getDpi()
+{
+	double dDpi = 1;
+	// Get desktop dc
+	HDC desktopDc = GetDC(NULL);
+	// Get native resolution
+	float horizontalDPI = GetDeviceCaps(desktopDc, LOGPIXELSX);
+	float verticalDPI = GetDeviceCaps(desktopDc, LOGPIXELSY);
+	int dpi = (horizontalDPI + verticalDPI) / 2;
+	dDpi = 1 + ((dpi - 96) / 24) * 0.25;
+	if (dDpi < 1)
+	{
+		dDpi = 1;
+	}
+	::ReleaseDC(NULL, desktopDc);
+	return dDpi;
+}
+
 void Menu::init()
 {
 	if (!isInit)
 	{
+		cout << getDpi() << endl;
 		// imgui结构检查
 		IMGUI_CHECKVERSION();
 		// 初始化imgui
@@ -54,6 +80,7 @@ void Menu::init()
 			distanceEsp = true;
 			openFriendEsp = true;
 			aimbot = true;
+			noRecoil = true;
 		}
 	}
 }

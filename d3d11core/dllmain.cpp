@@ -10,6 +10,9 @@
 
 using namespace std;
 
+WNDPROC oWndProc;
+Present oPresent;
+
 BOOL startFetchData();
 VOID startDebugWindow();
 void CreateRenderTarget();
@@ -18,9 +21,73 @@ void CleanupDeviceD3D();
 bool CreateDeviceD3D();
 void initOverlayWindow();
 
-WNDPROC oWndProc;
-Present oPresent;
+// 开始获取数据
+BOOL startFetchData()
+{
+	cout << "开始读取数据" << endl;
 
+	// 获取游戏窗口句柄
+	GlobalVars::get().hWindow = FindWindow(GAME_WIN_CLASS, GAME_WIN_NAME);
+	if (GlobalVars::get().hWindow == NULL)
+	{
+		return FALSE;
+	}
+
+	// 获取进程ID和模块基址
+	GlobalVars::get().pId = Memory::get().getProcessId(GlobalVars::get().hWindow);
+#ifdef EXTERNAL_DRAW
+	GlobalVars::get().hProcess = Memory::get().getProcessHandle(GlobalVars::get().pId);
+	cout << "游戏进程句柄 = " << GlobalVars::get().hProcess << endl;
+#endif
+	GlobalVars::get().baseAddr = Memory::get().GetModuleBaseAddr(MODULE_NAME);
+
+	cout << "游戏进程ID = " << GlobalVars::get().pId << endl;
+	cout << "游戏窗口句柄 = " << GlobalVars::get().hWindow << endl;
+	cout << "游戏模块基址 = " << GlobalVars::get().baseAddr << endl;
+
+	// 更新世界地址和矩阵地址
+	GlobalVars::get().updateWorldAddrAndViewMatrixAddr();
+	// 更新绘制窗口尺寸
+	GlobalVars::get().updateDrawRect();
+
+	cout << "游戏窗口.x = " << GlobalVars::get().drawRect.x << endl;
+	cout << "游戏窗口.y = " << GlobalVars::get().drawRect.y << endl;
+	cout << "游戏窗口.width = " << GlobalVars::get().drawRect.width << endl;
+	cout << "游戏窗口.height = " << GlobalVars::get().drawRect.height << endl;
+
+	return TRUE;
+}
+
+// 调试控制台
+VOID startDebugWindow()
+{
+	HINSTANCE g_hInstance = 0;
+	HANDLE g_hOutput = 0;
+	HWND hwnd = NULL;
+	HMENU hmenu = NULL;
+	CHAR title[] = "不要关闭本窗口！否则主窗口关闭";
+	HANDLE hdlWrite = NULL;
+
+	AllocConsole();
+	freopen("CONOUT$", "w+t", stdout);
+	freopen("CONIN$", "r+t", stdin);
+	g_hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	// 设置控制台窗口的属性
+	SetConsoleTitle(title);
+	SetConsoleTextAttribute((HANDLE)g_hOutput, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+
+	// 屏蔽掉控制台窗口的关闭按钮，以防窗口被误删除，会让游戏也关闭
+	while (NULL == hwnd)
+	{
+		hwnd = ::FindWindow(NULL, (LPCTSTR)title);
+	}
+	hmenu = ::GetSystemMenu(hwnd, FALSE);
+	DeleteMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
+	hdlWrite = GetStdHandle(STD_OUTPUT_HANDLE);
+	// 这里也可以使用STD_ERROR_HANDLE    TCHAR c[] = {"Hello world!"};WriteConsole(hdlWrite, c, sizeof(c), NULL, NULL);
+}
+
+// 创建RenderTarget
 void CreateRenderTarget()
 {
 	ID3D11Texture2D * pBackBuffer;
@@ -29,6 +96,7 @@ void CreateRenderTarget()
 	pBackBuffer->Release();
 }
 
+// 清理RenderTarget
 void CleanupRenderTarget()
 {
 	if (Renderer::get().pMainRenderTargetView)
@@ -38,6 +106,7 @@ void CleanupRenderTarget()
 	}
 }
 
+// 清理D3D
 void CleanupDeviceD3D()
 {
 	CleanupRenderTarget();
@@ -290,6 +359,12 @@ void initOverlayWindow()
 // 可执行程序入口
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	GlobalVars::get().hWindow = FindWindow(GAME_WIN_CLASS, GAME_WIN_NAME);
+	if (GlobalVars::get().hWindow == NULL)
+	{
+		MessageBox(NULL, "未发现目标游戏窗口", "错误提示", MB_OK | MB_ICONERROR);
+		return 0;
+	}
 	startDebugWindow();
 	startFetchData();
 	initOverlayWindow();
@@ -343,68 +418,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT
 	Renderer::get().drawFrames();
 
 	return oPresent(pSwapChain, SyncInterval, Flags);
-}
-
-// 开始获取数据
-BOOL startFetchData()
-{
-	cout << "开始读取数据" << endl;
-
-	// 获取游戏窗口句柄
-	GlobalVars::get().hWindow = FindWindow(GAME_WIN_CLASS, GAME_WIN_NAME);
-	if (GlobalVars::get().hWindow == NULL)
-	{
-		return FALSE;
-	}
-
-	// 获取进程ID和模块基址
-	GlobalVars::get().pId = Memory::get().getProcessId(GlobalVars::get().hWindow);
-#ifdef EXTERNAL_DRAW
-	GlobalVars::get().hProcess = Memory::get().getProcessHandle(GlobalVars::get().pId);
-	cout << "游戏进程句柄 = " << GlobalVars::get().hProcess << endl;
-#endif
-	GlobalVars::get().baseAddr = Memory::get().GetModuleBaseAddr(MODULE_NAME);
-
-	cout << "游戏进程ID = " << GlobalVars::get().pId << endl;
-	cout << "游戏窗口句柄 = " << GlobalVars::get().hWindow << endl;
-	cout << "游戏模块基址 = " << GlobalVars::get().baseAddr << endl;
-
-	// 更新世界地址和矩阵地址
-	GlobalVars::get().updateWorldAddrAndViewMatrixAddr();
-	// 更新绘制窗口尺寸
-	GlobalVars::get().updateDrawRect();
-
-	cout << "游戏窗口.x = " << GlobalVars::get().drawRect.x << endl;
-	cout << "游戏窗口.y = " << GlobalVars::get().drawRect.y << endl;
-	cout << "游戏窗口.width = " << GlobalVars::get().drawRect.width << endl;
-	cout << "游戏窗口.height = " << GlobalVars::get().drawRect.height << endl;
-
-	return TRUE;
-}
-
-// 调试控制台
-VOID startDebugWindow()
-{
-	HINSTANCE g_hInstance = 0;
-	HANDLE g_hOutput = 0;
-	HWND hwnd = NULL;
-	HMENU hmenu = NULL;
-	CHAR title[] = "不要关闭本窗口！否则主窗口关闭";
-	HANDLE hdlWrite = NULL;
-
-	AllocConsole();
-	freopen("CONOUT$", "w+t", stdout);
-	freopen("CONIN$", "r+t", stdin);
-	g_hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-	// 设置控制台窗口的属性
-	SetConsoleTitle(title);
-	SetConsoleTextAttribute((HANDLE)g_hOutput, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-	while (NULL == hwnd) hwnd = ::FindWindow(NULL, (LPCTSTR)title);
-	// 屏蔽掉控制台窗口的关闭按钮，以防窗口被误删除
-	hmenu = ::GetSystemMenu(hwnd, FALSE);
-	DeleteMenu(hmenu, SC_CLOSE, MF_BYCOMMAND);
-	hdlWrite = GetStdHandle(STD_OUTPUT_HANDLE);
-	// 这里也可以使用STD_ERROR_HANDLE    TCHAR c[] = {"Hello world!"};WriteConsole(hdlWrite, c, sizeof(c), NULL, NULL);
 }
 
 DWORD WINAPI mainThread(HANDLE hModule)

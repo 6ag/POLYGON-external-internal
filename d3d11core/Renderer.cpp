@@ -80,7 +80,7 @@ void Renderer::drawFrames()
 			}
 
 			// 自瞄
-			if (Menu::get().aimbot && (GlobalVars::get().playerList[i]->distance > 5 && GlobalVars::get().playerList[i]->distance <= Menu::get().aimbotRange) && lockAimTarget == nullptr)
+			if (Menu::get().aimbot && GlobalVars::get().playerList[i]->type == PlayerType::enemy && (GlobalVars::get().playerList[i]->distance > 5 && GlobalVars::get().playerList[i]->distance <= Menu::get().aimbotRange) && lockAimTarget == nullptr)
 			{
 				// 开了瞄准镜后，计算不准确了
 				// 准星距离，目标距离准星的距离，取所有目标中距离准星最小的。还有一种筛选自瞄目标的方式是取所有目标距离自己最近的。
@@ -371,28 +371,15 @@ void Renderer::aimbot(shared_ptr<Player> player)
 	{
 		index = 3;
 	}
-
-	if (aimbootWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48), bone2D, matrix))
+	if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48), bone2D, matrix))
 	{
 		//cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
-		mouse_event(MOUSEEVENTF_MOVE, bone2D.x, bone2D.y, 0, 0);
+		mouse_event(MOUSEEVENTF_MOVE,
+					(bone2D.x - GlobalVars::get().drawRect.centerX) / 4.0f,
+					(bone2D.y - GlobalVars::get().drawRect.centerY) / 4.0f,
+					0,
+					0);
 	}
-}
-
-// 世界坐标转屏幕坐标
-bool Renderer::aimbootWorldToScreen(const Vector2 & screen_size, const Vector3 & pos, Vector2 & retPos, view_matrix_t matrix)
-{
-	float w = matrix[0][3] * pos.x + matrix[1][3] * pos.y + matrix[2][3] * pos.z + matrix[3][3];
-	if (w < 0.001f)
-		return false;
-
-	float x = (matrix[0][0] * pos.x + matrix[1][0] * pos.y + matrix[2][0] * pos.z + matrix[3][0]) / w * screen_size.x * .5f;
-	float y = -(matrix[0][1] * pos.x + matrix[1][1] * pos.y + matrix[2][1] * pos.z + matrix[3][1]) / w * screen_size.y * .5f;
-
-	retPos.x = x;
-	retPos.y = y;
-
-	return true;
 }
 
 // 绘制火柴人
