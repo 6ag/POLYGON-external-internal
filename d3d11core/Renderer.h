@@ -49,6 +49,8 @@ private:
 	void hpEsp(shared_ptr<Player> player);
 	void distanceEsp(shared_ptr<Player> player);
 
+	void aimbotRangeEsp();
+	void aimbotArrowEsp(shared_ptr<Player> player);
 	void aimbot(shared_ptr<Player> player);
 	void drawTest(shared_ptr<Player> player, view_matrix_t matrix, Color color);
 	void drawMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix, Color color);

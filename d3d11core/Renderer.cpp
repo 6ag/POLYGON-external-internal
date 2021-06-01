@@ -33,7 +33,7 @@ void Renderer::drawFrames()
 			//baseAddrEsp(GlobalVars::get().enemyList[i]);
 
 			// 透视
-			if (GlobalVars::get().playerList[i]->distance <= Menu::get().espRange)
+			if (GlobalVars::get().playerList[i]->distance <= Menu::get().espDistance)
 			{
 				// 方框透视
 				if (Menu::get().boxEsp)
@@ -74,15 +74,14 @@ void Renderer::drawFrames()
 			}
 
 			// 自瞄
-			if (Menu::get().aimbot && GlobalVars::get().playerList[i]->type == PlayerType::enemy && (GlobalVars::get().playerList[i]->distance > 5 && GlobalVars::get().playerList[i]->distance <= Menu::get().aimbotRange) && lockAimTarget == nullptr)
+			if (Menu::get().aimbot && GlobalVars::get().playerList[i]->type == PlayerType::enemy && (GlobalVars::get().playerList[i]->distance > 5 && GlobalVars::get().playerList[i]->distance <= Menu::get().aimbotDistance) && lockAimTarget == nullptr)
 			{
 				// 开了瞄准镜后，计算不准确了
 				// 准星距离，目标距离准星的距离，取所有目标中距离准星最小的。还有一种筛选自瞄目标的方式是取所有目标距离自己最近的。
 				float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().playerList[i]->box.centerX;
 				float yDiff = GlobalVars::get().drawRect.centerY - GlobalVars::get().playerList[i]->box.centerY;
 				float crossCenter = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
-				float radius = 150.0f;
-				if (crossCenter < radius && crossCenter < minCrossCenter)
+				if (crossCenter < Menu::get().aimbotRadius && crossCenter < minCrossCenter)
 				{
 					minCrossCenter = crossCenter;
 					bestAimTarget = GlobalVars::get().playerList[i];
@@ -99,10 +98,15 @@ void Renderer::drawFrames()
 		}
 	}
 
+	aimbotRangeEsp();
+
 	if (Menu::get().aimbot && bestAimTarget != nullptr)
 	{
 		// 锁定自瞄目标
 		lockAimTarget = bestAimTarget;
+
+		// 把自瞄对象标记出来
+		aimbotArrowEsp(lockAimTarget);
 	}
 
 	// 自瞄
@@ -305,6 +309,38 @@ bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matr
 	return true;
 }
 
+void Renderer::aimbotRangeEsp()
+{
+	float crossLength = 15.0f;
+	drawImCircle(GlobalVars::get().drawRect.getCenter(), Menu::get().aimbotRadius, 100, Color::White);
+
+	drawImLine(Vector2(GlobalVars::get().drawRect.centerX - crossLength, GlobalVars::get().drawRect.centerY),
+			   Vector2(GlobalVars::get().drawRect.centerX + crossLength, GlobalVars::get().drawRect.centerY),
+			   Color::White);
+
+	drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - crossLength),
+			   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + crossLength),
+			   Color::White);
+}
+
+void Renderer::aimbotArrowEsp(shared_ptr<Player> player)
+{
+	Color arrowColor = Color::Orange;
+	//Color arrowColor = Menu::get().espColor;
+	drawImLine(Vector2(player->box.centerX - player->box.width * 0.5f, player->box.y - player->box.height * 0.5f),
+			   Vector2(player->box.centerX, player->box.y),
+			   arrowColor,
+			   1.5f);
+	drawImLine(Vector2(player->box.centerX + player->box.width * 0.5f, player->box.y - player->box.height * 0.5f),
+			   Vector2(player->box.centerX, player->box.y),
+			   arrowColor,
+			   1.5f);
+	drawImLine(Vector2(player->box.centerX, player->box.y - player->box.height * 1.5f),
+			   Vector2(player->box.centerX, player->box.y),
+			   arrowColor,
+			   1.5f);
+}
+
 void Renderer::boxEsp(shared_ptr<Player> player)
 {
 	//float thikness = player->distance <= 1200.f ? thikness = 1.f : thikness = 0.5f;
@@ -384,7 +420,8 @@ void Renderer::aimbot(shared_ptr<Player> player)
 	}
 	if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48), bone2D, matrix))
 	{
-		//cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
+		/*cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
+		cout << "centerX=" << GlobalVars::get().drawRect.centerX << ",centerY=" << GlobalVars::get().drawRect.centerY << endl;*/
 		mouse_event(MOUSEEVENTF_MOVE,
 					(bone2D.x - GlobalVars::get().drawRect.centerX) / 4.0f,
 					(bone2D.y - GlobalVars::get().drawRect.centerY) / 4.0f,

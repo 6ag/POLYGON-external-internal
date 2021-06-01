@@ -147,7 +147,7 @@ void Menu::imGuiStart()
 				break;
 		}
 
-		ImGui::SliderInt(u8"透视范围", &espRange, 0, 500);
+		ImGui::SliderInt(u8"透视范围", &espDistance, 0, 500);
 
 		ImGui::TextColored(ImColor(0, 191, 255, 255), u8"射击选项");
 		ImGui::Checkbox(u8"自苗锁定  【F5】", &aimbot);
@@ -155,7 +155,7 @@ void Menu::imGuiStart()
 		ImGui::RadioButton(u8"头部", &aimbotType, 0); ImGui::SameLine();
 		ImGui::RadioButton(u8"胸部", &aimbotType, 1);
 
-		ImGui::SliderInt(u8"自苗范围", &aimbotRange, 0, 500);
+		ImGui::SliderInt(u8"自苗范围", &aimbotDistance, 0, 500);
 		ImGui::SliderFloat(u8"射击间隔", &fireSpeed, 0.001f, 1);
 		ImGui::Checkbox(u8"无后坐力+快速射击", &noRecoil);
 		// 无限子弹好像没伤害
