@@ -159,7 +159,7 @@ void Menu::imGuiStart()
 		ImGui::SliderFloat(u8"射击间隔", &fireSpeed, 0.001f, 1);
 		ImGui::Checkbox(u8"无后坐力+快速射击", &noRecoil);
 		// 无限子弹好像没伤害
-		ImGui::Checkbox(u8"无限子弹", &lockBullet);
+		ImGui::Checkbox(u8"无限子弹-回主界面一定要关闭", &lockBullet);
 
 		// POLYGON速度改了走不动
 		/*ImGui::TextColored(ImColor(0, 191, 255, 255), u8"其他功能");

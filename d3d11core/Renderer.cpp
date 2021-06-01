@@ -98,7 +98,10 @@ void Renderer::drawFrames()
 		}
 	}
 
-	aimbotRangeEsp();
+	if (Menu::get().aimbot)
+	{
+		aimbotRangeEsp();
+	}
 
 	if (Menu::get().aimbot && bestAimTarget != nullptr)
 	{
@@ -118,16 +121,16 @@ void Renderer::drawFrames()
 			aimCounter++;
 			if (aimCounter > 15)
 			{
-				aimbot(lockAimTarget);
-				/*if (lockAimTarget->hp < 1)
+				// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
+				if (boneCheckPlayerActive(lockAimTarget, matrix))
+				{
+					aimbot(lockAimTarget);
+				}
+				else
 				{
 					aimCounter = 0;
 					lockAimTarget = nullptr;
 				}
-				else
-				{
-					aimbot(lockAimTarget);
-				}*/
 			}
 		}
 	}
@@ -312,24 +315,22 @@ bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matr
 void Renderer::aimbotRangeEsp()
 {
 	drawImCircle(GlobalVars::get().drawRect.getCenter(), Menu::get().aimbotRadius, 100, Color::White);
+	//drawImCircle(GlobalVars::get().drawRect.getCenter(), 15, 100, Color::White);
+	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX - 20, GlobalVars::get().drawRect.centerY),
+	//		   Vector2(GlobalVars::get().drawRect.centerX - 10, GlobalVars::get().drawRect.centerY),
+	//		   Color::White);
 
-	drawImCircle(GlobalVars::get().drawRect.getCenter(), 15, 100, Color::White);
+	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX + 20, GlobalVars::get().drawRect.centerY),
+	//		   Vector2(GlobalVars::get().drawRect.centerX + 10, GlobalVars::get().drawRect.centerY),
+	//		   Color::White);
 
-	drawImLine(Vector2(GlobalVars::get().drawRect.centerX - 20, GlobalVars::get().drawRect.centerY),
-			   Vector2(GlobalVars::get().drawRect.centerX - 10, GlobalVars::get().drawRect.centerY),
-			   Color::White);
+	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 20),
+	//		   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 10),
+	//		   Color::White);
 
-	drawImLine(Vector2(GlobalVars::get().drawRect.centerX + 20, GlobalVars::get().drawRect.centerY),
-			   Vector2(GlobalVars::get().drawRect.centerX + 10, GlobalVars::get().drawRect.centerY),
-			   Color::White);
-
-	drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 20),
-			   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 10),
-			   Color::White);
-
-	drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 20),
-			   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 10),
-			   Color::White);
+	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 20),
+	//		   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 10),
+	//		   Color::White);
 
 }
 
@@ -432,11 +433,8 @@ void Renderer::aimbot(shared_ptr<Player> player)
 	{
 		/*cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
 		cout << "centerX=" << GlobalVars::get().drawRect.centerX << ",centerY=" << GlobalVars::get().drawRect.centerY << endl;*/
-		mouse_event(MOUSEEVENTF_MOVE,
-					(bone2D.x - GlobalVars::get().drawRect.centerX) / 4.0f,
-					(bone2D.y - GlobalVars::get().drawRect.centerY) / 4.0f,
-					0,
-					0);
+		float rate = 30.0f;
+		mouse_event(MOUSEEVENTF_MOVE, (bone2D.x - GlobalVars::get().drawRect.centerX) / rate, (bone2D.y - GlobalVars::get().drawRect.centerY) / rate, 0, 0);
 	}
 }
 

@@ -13,7 +13,7 @@ public:
 	bool showMenu = true; // 菜单显示
 	int aimbotDistance = 250; // 自瞄距离
 	int espDistance = 250; // 透视距离
-	int aimbotRadius = 100; // 自瞄圈半径，圆心是屏幕中心
+	int aimbotRadius = 200; // 自瞄圈半径，圆心是屏幕中心
 	Color espColor = Color::Red; // 透视颜色
 	bool openFriendEsp = false; // 队友透视开关
 	bool boxEsp = false; // 方框透视
