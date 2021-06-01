@@ -356,26 +356,27 @@ void Renderer::aimbotArrowEsp(shared_ptr<Player> player)
 
 void Renderer::boxEsp(shared_ptr<Player> player)
 {
-	//float thikness = player->distance <= 1200.f ? thikness = 1.f : thikness = 0.5f;
+	float thikness = player->distance <= 100.f ? thikness = 1.f : thikness = 0.5f;
 	if (player->type == PlayerType::enemy)
 	{
-		drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), Menu::get().espColor);
+		drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), Menu::get().espColor, thikness);
 	}
 	else if (Menu::get().openFriendEsp)
 	{
-		drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), Color::Green);
+		drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), Color::Green, thikness);
 	}
 }
 
 void Renderer::lineEsp(shared_ptr<Player> player)
 {
+	float thikness = player->distance <= 100.f ? thikness = 1.f : thikness = 0.5f;
 	if (player->type == PlayerType::enemy)
 	{
-		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, 0), Vector2(player->box.centerX, player->box.y), Menu::get().espColor);
+		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, 0), Vector2(player->box.centerX, player->box.y), Menu::get().espColor, thikness);
 	}
 	else if (Menu::get().openFriendEsp)
 	{
-		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, 0), Vector2(player->box.centerX, player->box.y), Color::Green);
+		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, 0), Vector2(player->box.centerX, player->box.y), Color::Green, thikness);
 	}
 }
 
@@ -435,8 +436,9 @@ void Renderer::aimbot(shared_ptr<Player> player)
 	{
 		/*cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
 		cout << "centerX=" << GlobalVars::get().drawRect.centerX << ",centerY=" << GlobalVars::get().drawRect.centerY << endl;*/
-		float rate = 30.0f;
-		mouse_event(MOUSEEVENTF_MOVE, (bone2D.x - GlobalVars::get().drawRect.centerX) / rate, (bone2D.y - GlobalVars::get().drawRect.centerY) / rate, 0, 0);
+		// 缩放率越大，移动越平滑，但太过大会移动缓慢。缩放率越小，移动就越快速，加速度可能还会让镜头甩动
+		float scaleRate = 6.0f;
+		mouse_event(MOUSEEVENTF_MOVE, (bone2D.x - GlobalVars::get().drawRect.centerX) / scaleRate, (bone2D.y - GlobalVars::get().drawRect.centerY) / scaleRate, 0, 0);
 	}
 }
 

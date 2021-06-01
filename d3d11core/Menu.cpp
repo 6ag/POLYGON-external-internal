@@ -81,6 +81,7 @@ void Menu::init()
 			distanceEsp = true;
 			//openFriendEsp = true;
 			aimbot = true;
+			aimCross = true;
 			noRecoil = true;
 		}
 	}
@@ -230,7 +231,7 @@ void Menu::switchState()
 		aimbot = true;
 		noRecoil = true;
 		lockBullet = true;
-		}
+	}
 
 	// 全关
 	if (GetAsyncKeyState(VK_END) == click)
@@ -269,7 +270,7 @@ void Menu::switchState()
 	{
 		aimbot = !aimbot;
 	}
-	}
+}
 
 void Menu::imGuiEnd()
 {
