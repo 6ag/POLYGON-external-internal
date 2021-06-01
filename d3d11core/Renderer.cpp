@@ -24,20 +24,14 @@ void Renderer::drawFrames()
 	{
 		if (playerWorldToScreen(GlobalVars::get().playerList[i], matrix))
 		{
-			Vector2 boneVec2;
-			Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
-
-			// 死了骨头计算不对，就跳过
-			if (!boneWorldToScreen(screenSize, getBonePos(GlobalVars::get().playerList[i]->skeletonMatrixAddr, GlobalVars::get().playerList[i]->skeletonArrayAddr + 1 * 48), boneVec2, matrix))
-			{
-				continue;
-			}
-			if (boneVec2.x == 0 && boneVec2.y == 0)
+			// 通过骨骼去计算玩家是否是活的
+			if (!boneCheckPlayerActive(GlobalVars::get().playerList[i], matrix))
 			{
 				continue;
 			}
 
 			//baseAddrEsp(GlobalVars::get().enemyList[i]);
+
 			// 透视
 			if (GlobalVars::get().playerList[i]->distance <= Menu::get().espRange)
 			{
@@ -54,10 +48,10 @@ void Renderer::drawFrames()
 				}
 
 				// 血量透视
-				if (Menu::get().hpEsp)
+				/*if (Menu::get().hpEsp)
 				{
 					hpEsp(GlobalVars::get().playerList[i]);
-				}
+				}*/
 
 				// 距离透视
 				if (Menu::get().distanceEsp)
@@ -95,12 +89,12 @@ void Renderer::drawFrames()
 				}
 
 				// 绘制目标离准星的距离，用于测试
-				if (true)
+				/*if (true)
 				{
 					char text[50];
 					sprintf_s(text, "%.0f", crossCenter);
 					drawImText(Vector2(GlobalVars::get().playerList[i]->box.x, GlobalVars::get().playerList[i]->box.y + GlobalVars::get().playerList[i]->box.height), text, Menu::get().espColor);
-				}
+				}*/
 			}
 		}
 	}
@@ -209,6 +203,28 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 	drawImText(Vector2(tmpBox.centerX, tmpBox.y), player->bpCName.c_str(), color, false, 25);
 	//drawImText(Vector2(tmpBox.centerX, tmpBox.y), text, color, false, 25);
 	drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), color);
+}
+
+// 骨骼检测是否死亡
+bool Renderer::boneCheckPlayerActive(shared_ptr<Player> player, view_matrix_t matrix)
+{
+	BoneData boneData;
+	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
+
+	if (boneWorldToScreen(screenSize, getBonePos(player->skeletonMatrixAddr, player->skeletonArrayAddr + 5 * 48), boneData.head, matrix))
+	{
+		if (boneWorldToScreen(screenSize, getBonePos(player->skeletonMatrixAddr, player->skeletonArrayAddr + 1 * 48), boneData.pelvis, matrix))
+		{
+			if (boneData.head.x != boneData.pelvis.x && boneData.head.y != boneData.pelvis.y)
+			{
+				// 没死
+				return true;
+			}
+		}
+	}
+
+	// 人死了
+	return false;
 }
 
 // 人物加速
@@ -429,6 +445,22 @@ void Renderer::drawMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix
 																drawImLine(boneData.rightThigh, boneData.rightKnee, color);
 																drawImLine(boneData.leftKnee, boneData.leftAnkle, color);
 																drawImLine(boneData.rightKnee, boneData.rightAnkle, color);
+
+																/*cout << "head=" << boneData.head.x << "," << boneData.head.y << endl;
+																cout << "chest=" << boneData.chest.x << "," << boneData.chest.y << endl;
+																cout << "pelvis=" << boneData.pelvis.x << "," << boneData.pelvis.y << endl;
+																cout << "leftShoulder=" << boneData.leftShoulder.x << "," << boneData.leftShoulder.y << endl;
+																cout << "rightShoulder=" << boneData.rightShoulder.x << "," << boneData.rightShoulder.y << endl;
+																cout << "leftElbow=" << boneData.leftElbow.x << "," << boneData.leftElbow.y << endl;
+																cout << "rightElbow=" << boneData.rightElbow.x << "," << boneData.rightElbow.y << endl;
+																cout << "leftWrist=" << boneData.leftWrist.x << "," << boneData.leftWrist.y << endl;
+																cout << "rightWrist=" << boneData.rightWrist.x << "," << boneData.rightWrist.y << endl;
+																cout << "leftThigh=" << boneData.leftThigh.x << "," << boneData.leftThigh.y << endl;
+																cout << "rightThigh=" << boneData.rightThigh.x << "," << boneData.rightThigh.y << endl;
+																cout << "leftKnee=" << boneData.leftKnee.x << "," << boneData.leftKnee.y << endl;
+																cout << "rightKnee=" << boneData.rightKnee.x << "," << boneData.rightKnee.y << endl;
+																cout << "leftAnkle=" << boneData.leftAnkle.x << "," << boneData.leftAnkle.y << endl;
+																cout << "rightAnkle=" << boneData.rightAnkle.x << "," << boneData.rightAnkle.y << endl;*/
 															}
 														}
 													}

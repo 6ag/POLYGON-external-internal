@@ -57,6 +57,7 @@ private:
 	bool boneWorldToScreen(const Vector2 & screen_size, const Vector3 & pos, Vector2 & retPos, view_matrix_t matrix);
 	void readTransform(FTransform & out, uintptr_t addr);
 	void toMatrixWithScale(MyD3DXMATRIX & out, Vector4 rotation, Vector3 translation, Vector3 scale3D);
+	bool boneCheckPlayerActive(shared_ptr<Player> player, view_matrix_t matrix);
 
 	struct vertex
 	{
