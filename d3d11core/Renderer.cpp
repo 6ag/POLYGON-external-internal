@@ -311,16 +311,26 @@ bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matr
 
 void Renderer::aimbotRangeEsp()
 {
-	float crossLength = 15.0f;
 	drawImCircle(GlobalVars::get().drawRect.getCenter(), Menu::get().aimbotRadius, 100, Color::White);
 
-	drawImLine(Vector2(GlobalVars::get().drawRect.centerX - crossLength, GlobalVars::get().drawRect.centerY),
-			   Vector2(GlobalVars::get().drawRect.centerX + crossLength, GlobalVars::get().drawRect.centerY),
+	drawImCircle(GlobalVars::get().drawRect.getCenter(), 15, 100, Color::White);
+
+	drawImLine(Vector2(GlobalVars::get().drawRect.centerX - 20, GlobalVars::get().drawRect.centerY),
+			   Vector2(GlobalVars::get().drawRect.centerX - 10, GlobalVars::get().drawRect.centerY),
 			   Color::White);
 
-	drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - crossLength),
-			   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + crossLength),
+	drawImLine(Vector2(GlobalVars::get().drawRect.centerX + 20, GlobalVars::get().drawRect.centerY),
+			   Vector2(GlobalVars::get().drawRect.centerX + 10, GlobalVars::get().drawRect.centerY),
 			   Color::White);
+
+	drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 20),
+			   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 10),
+			   Color::White);
+
+	drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 20),
+			   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 10),
+			   Color::White);
+
 }
 
 void Renderer::aimbotArrowEsp(shared_ptr<Player> player)
