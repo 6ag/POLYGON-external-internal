@@ -87,7 +87,8 @@ void Renderer::drawFrames()
 				float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().playerList[i]->box.centerX;
 				float yDiff = GlobalVars::get().drawRect.centerY - GlobalVars::get().playerList[i]->box.centerY;
 				float crossCenter = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
-				if (crossCenter < minCrossCenter)
+				float radius = 100.0f;
+				if (crossCenter < radius && crossCenter < minCrossCenter)
 				{
 					minCrossCenter = crossCenter;
 					bestAimTarget = GlobalVars::get().playerList[i];
