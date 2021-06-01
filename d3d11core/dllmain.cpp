@@ -178,6 +178,7 @@ LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #endif
 }
 
+// ------------------------------程序入口------------------------------
 #ifdef EXTERNAL_DRAW
 
 // 初始化D3D

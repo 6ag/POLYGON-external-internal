@@ -9,6 +9,7 @@
 // Author:      xxx
 // Date:        2020/09/23
 // Returns:     比例 
+// 内部-1920*1080返回了1.5
 //************************************
 double getDpi()
 {
@@ -32,7 +33,7 @@ void Menu::init()
 {
 	if (!isInit)
 	{
-		cout << getDpi() << endl;
+		cout << "屏幕dpi=" << getDpi() << endl;
 		// imgui结构检查
 		IMGUI_CHECKVERSION();
 		// 初始化imgui
@@ -198,12 +199,6 @@ void Menu::switchState()
 	//  -32767单点 -32768按下
 	SHORT pressed = -32768;
 	SHORT click = -32767;
-
-	// 控制窗口显示/隐藏
-	if (GetAsyncKeyState(VK_INSERT) == click)
-	{
-		showMenu = !showMenu;
-	}
 
 	// 控制窗口显示/隐藏
 	if (GetAsyncKeyState(VK_INSERT) == click)

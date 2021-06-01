@@ -87,7 +87,7 @@ void Renderer::drawFrames()
 				float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().playerList[i]->box.centerX;
 				float yDiff = GlobalVars::get().drawRect.centerY - GlobalVars::get().playerList[i]->box.centerY;
 				float crossCenter = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
-				float radius = 100.0f;
+				float radius = 150.0f;
 				if (crossCenter < radius && crossCenter < minCrossCenter)
 				{
 					minCrossCenter = crossCenter;
@@ -95,16 +95,12 @@ void Renderer::drawFrames()
 				}
 
 				// 绘制目标离准星的距离，用于测试
-				/*if (false)
+				if (true)
 				{
 					char text[50];
-					sprintf_s(text, "%.0f, %.0f, %.0f",
-							  crossCenter,
-							  GlobalVars::get().enemyList[i]->box.centerX,
-							  GlobalVars::get().enemyList[i]->box.centerY);
-
-					drawImText(Vector2(GlobalVars::get().playerList[i]->box.x, GlobalVars::get().playerList[i]->box.y + GlobalVars::get().playerList[i]->box.height), text, Config::get().espColor);
-				}*/
+					sprintf_s(text, "%.0f", crossCenter);
+					drawImText(Vector2(GlobalVars::get().playerList[i]->box.x, GlobalVars::get().playerList[i]->box.y + GlobalVars::get().playerList[i]->box.height), text, Menu::get().espColor);
+				}
 			}
 		}
 	}
@@ -163,8 +159,6 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 	}
 	char text[50];
 	sprintf_s(text, "0x%llX", player->base);
-	// 怎么打印出自己身上的所有地址？
-	//cout << text << endl;
 
 	// counter 1-6
 	static int counter = 0;

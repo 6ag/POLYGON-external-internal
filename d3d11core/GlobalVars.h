@@ -29,12 +29,11 @@
 
 #include "Singleton.h"
 
-// QQ：2838651302 学习游戏安全一个月，求大佬带带我
 // 外部宏，有定义宏说明是外部绘制。
 // 内部和外部切换：修改 项目-属性-配置属性-常规-配置类型，选择 DLL动态库/EXE应用程序。
 // 如果是DLL动态库，则是内部绘制，需要注释EXTERNAL_DRAW宏
 // 如果是EXE应用程序，则是外部绘制，需要取消注释EXTERNAL_DRAW宏
-#define EXTERNAL_DRAW
+//#define EXTERNAL_DRAW
 
 // 进程和窗口的一些信息
 #ifdef EXTERNAL_DRAW
