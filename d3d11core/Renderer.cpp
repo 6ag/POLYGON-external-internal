@@ -315,23 +315,25 @@ bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matr
 void Renderer::aimbotRangeEsp()
 {
 	drawImCircle(GlobalVars::get().drawRect.getCenter(), Menu::get().aimbotRadius, 100, Color::White);
-	//drawImCircle(GlobalVars::get().drawRect.getCenter(), 15, 100, Color::White);
-	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX - 20, GlobalVars::get().drawRect.centerY),
-	//		   Vector2(GlobalVars::get().drawRect.centerX - 10, GlobalVars::get().drawRect.centerY),
-	//		   Color::White);
+	if (Menu::get().aimCross)
+	{
+		drawImCircle(GlobalVars::get().drawRect.getCenter(), 15, 100, Color::White);
+		drawImLine(Vector2(GlobalVars::get().drawRect.centerX - 20, GlobalVars::get().drawRect.centerY),
+				   Vector2(GlobalVars::get().drawRect.centerX - 10, GlobalVars::get().drawRect.centerY),
+				   Color::White);
 
-	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX + 20, GlobalVars::get().drawRect.centerY),
-	//		   Vector2(GlobalVars::get().drawRect.centerX + 10, GlobalVars::get().drawRect.centerY),
-	//		   Color::White);
+		drawImLine(Vector2(GlobalVars::get().drawRect.centerX + 20, GlobalVars::get().drawRect.centerY),
+				   Vector2(GlobalVars::get().drawRect.centerX + 10, GlobalVars::get().drawRect.centerY),
+				   Color::White);
 
-	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 20),
-	//		   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 10),
-	//		   Color::White);
+		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 20),
+				   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY - 10),
+				   Color::White);
 
-	//drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 20),
-	//		   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 10),
-	//		   Color::White);
-
+		drawImLine(Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 20),
+				   Vector2(GlobalVars::get().drawRect.centerX, GlobalVars::get().drawRect.centerY + 10),
+				   Color::White);
+	}
 }
 
 void Renderer::aimbotArrowEsp(shared_ptr<Player> player)
