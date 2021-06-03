@@ -13,7 +13,7 @@ void Renderer::drawFrames()
 	// 临时的最佳自瞄目标
 	shared_ptr<Player> bestAimTarget = nullptr;
 
-	/*if (GlobalVars::get().localPlayer != nullptr && transformCoord(GlobalVars::get().localPlayer, matrix))
+	/*if (GlobalVars::get().localPlayer != nullptr && playerWorldToScreen(GlobalVars::get().localPlayer, matrix))
 	{
 		baseAddrEsp(GlobalVars::get().localPlayer);
 		lineEsp(GlobalVars::get().localPlayer);
@@ -30,7 +30,7 @@ void Renderer::drawFrames()
 				continue;
 			}
 
-			//baseAddrEsp(GlobalVars::get().enemyList[i]);
+			//baseAddrEsp(GlobalVars::get().playerList[i]);
 
 			// 透视
 			if (GlobalVars::get().playerList[i]->distance <= Menu::get().espDistance)
@@ -437,9 +437,57 @@ void Renderer::aimbot(shared_ptr<Player> player)
 		/*cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
 		cout << "centerX=" << GlobalVars::get().drawRect.centerX << ",centerY=" << GlobalVars::get().drawRect.centerY << endl;*/
 		// 缩放率越大，移动越平滑，但太过大会移动缓慢。缩放率越小，移动就越快速，加速度可能还会让镜头甩动
-		float scaleRate = 6.0f;
-		mouse_event(MOUSEEVENTF_MOVE, (bone2D.x - GlobalVars::get().drawRect.centerX) / scaleRate, (bone2D.y - GlobalVars::get().drawRect.centerY) / scaleRate, 0, 0);
+		//float scaleRate = 6.0f;
+		//mouse_event(MOUSEEVENTF_MOVE, (bone2D.x - GlobalVars::get().drawRect.centerX) / scaleRate, (bone2D.y - GlobalVars::get().drawRect.centerY) / scaleRate, 0, 0);
+
+		aimAt(bone2D);
 	}
+}
+
+// 瞄准目标
+void Renderer::aimAt(Vector2 targetPos)
+{
+	// 瞄准速度
+	int aimSpeed = 12;
+	float screenCenterX = GlobalVars::get().drawRect.centerX;
+	float screenCenterY = GlobalVars::get().drawRect.centerY;
+	float targetX = 0;
+	float targetY = 0;
+
+	if (targetPos.x != 0)
+	{
+		if (targetPos.x > screenCenterX)
+		{
+			targetX = -(screenCenterX - targetPos.x);
+			targetX /= aimSpeed;
+			if (targetX + screenCenterX > screenCenterX * 2) targetX = 0;
+		}
+
+		if (targetPos.x < screenCenterX)
+		{
+			targetX = targetPos.x - screenCenterX;
+			targetX /= aimSpeed;
+			if (targetX + screenCenterX < 0) targetX = 0;
+		}
+	}
+
+	if (targetPos.y != 0)
+	{
+		if (targetPos.y > screenCenterY)
+		{
+			targetY = -(screenCenterY - targetPos.y);
+			targetY /= aimSpeed;
+			if (targetY + screenCenterY > screenCenterY * 2) targetY = 0;
+		}
+
+		if (targetPos.y < screenCenterY)
+		{
+			targetY = targetPos.y - screenCenterY;
+			targetY /= aimSpeed;
+			if (targetY + screenCenterY < 0) targetY = 0;
+		}
+	}
+	mouse_event(MOUSEEVENTF_MOVE, static_cast<DWORD>(targetX), static_cast<DWORD>(targetY), NULL, NULL);
 }
 
 // 绘制火柴人

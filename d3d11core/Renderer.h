@@ -52,6 +52,7 @@ private:
 	void aimbotRangeEsp();
 	void aimbotArrowEsp(shared_ptr<Player> player);
 	void aimbot(shared_ptr<Player> player);
+	void aimAt(Vector2 targetPos);
 	void drawTest(shared_ptr<Player> player, view_matrix_t matrix, Color color);
 	void drawMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix, Color color);
 	bool aimbootWorldToScreen(const Vector2 & screen_size, const Vector3 & pos, Vector2 & retPos, view_matrix_t matrix);

@@ -428,7 +428,6 @@ DWORD WINAPI mainThread(HANDLE hModule)
 	bool init_hook = false;
 	do
 	{
-		// Hook D3D11
 		if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success)
 		{
 			kiero::bind(8, (void **)&oPresent, hkPresent);
