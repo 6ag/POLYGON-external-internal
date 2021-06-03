@@ -44,5 +44,5 @@ public:
 	void update();
 private:
 	// 获取蓝图类型名字
-	std::string getBpCName();
+	std::string getBpCName(uintptr_t base);
 };

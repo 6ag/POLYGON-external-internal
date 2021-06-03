@@ -74,12 +74,55 @@ void GlobalVars::updateDrawRect()
 #endif
 }
 
+// BP_PG_Character_Blue_C
+// BP_PG_Character_Red_C
+// 读取name
+std::string GlobalVars::getBpCName(uintptr_t base)
+{
+	int objId = Memory::get().read<int>(base + 0x18);
+	UCHAR tableLocaltion = (UINT)(int)(objId >> 16);
+	ULONG rowLocaltion = (USHORT)objId;
+	int pRowLocation = rowLocaltion;
+	//cout << "rowLocaltion=" << rowLocaltion << ",pRowLocation=" << pRowLocation << endl;
+
+	uintptr_t gNameTable = GlobalVars::get().baseAddr + GlobalVars::get().ofs.gname;
+	uintptr_t tableLocationAddress = Memory::get().read<uintptr_t>(gNameTable + tableLocaltion * 8);
+	tableLocationAddress += 2 * pRowLocation;
+	USHORT sLength = Memory::get().read<USHORT>(tableLocationAddress);
+	sLength = sLength >> 6;
+	//cout << "sLength=" << sLength << endl;
+	if (sLength < 128)
+	{
+		char buffer[128] = { '\0' };
+		for (int i = 0; i < sLength; i++)
+		{
+			buffer[i] = Memory::get().read<char>(tableLocationAddress + 2 + i);
+		}
+
+		std::string name = buffer;
+		name.resize(sLength);
+		//cout << "objId=" << objId << ",address=" << tableLocationAddress + 2 << ",length=" << sLength << ",buffer=" << buffer << ",name=" << name << endl;
+		return name;
+	}
+	return "None";
+}
+
 void GlobalVars::updatePlayerList()
 {
+	GlobalVars::get().gameInstanceAddr = Memory::get().read<uintptr_t>(GlobalVars::get().worldAddr + GlobalVars::get().ofs.gameInstance_offset);
+	GlobalVars::get().localPlayersAddr = Memory::get().read<uintptr_t>(GlobalVars::get().gameInstanceAddr + GlobalVars::get().ofs.localPlayers_offset);
+	/*cout << "gameInstanceAddr = " << GlobalVars::get().gameInstanceAddr << endl;
+	cout << "localPlayersAddr = " << GlobalVars::get().localPlayersAddr << endl;*/
+
+	uintptr_t localPlayerBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().localPlayersAddr);
+	uintptr_t playerControllerAddr = Memory::get().read<uintptr_t>(localPlayerBaseAddr + GlobalVars::get().ofs.playerController_offset);
+	uintptr_t pawnAddr = Memory::get().read<uintptr_t>(playerControllerAddr + GlobalVars::get().ofs.pawn_offset);
+	std::string pawnBpCName = getBpCName(pawnAddr);
+
+
 	GlobalVars::get().uLevelAddr = Memory::get().read<uintptr_t>(GlobalVars::get().worldAddr + GlobalVars::get().ofs.uLevel_offset);
 	GlobalVars::get().actorCount = Memory::get().read<int>(GlobalVars::get().uLevelAddr + GlobalVars::get().ofs.actorCount_offset);
 	GlobalVars::get().actorsAddr = Memory::get().read<uintptr_t>(GlobalVars::get().uLevelAddr + GlobalVars::get().ofs.actorArray_offset);
-
 	/*cout << "uLevelAddr = " << GlobalVars::get().uLevelAddr << endl;
 	cout << "actorCount = " << GlobalVars::get().actorCount << endl;
 	cout << "actorsAddr = " << GlobalVars::get().actorsAddr << endl;*/
@@ -88,40 +131,39 @@ void GlobalVars::updatePlayerList()
 	for (int i = 0; i < GlobalVars::get().actorCount; i++)
 	{
 		uintptr_t actorBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().actorsAddr + i * 0x8);
+
+		std::string bpCName = getBpCName(actorBaseAddr);
+		// 不属于双方阵营直接过滤
+		if (bpCName != "BP_PG_Character_Blue_C" && bpCName != "BP_PG_Character_Red_C")
+		{
+			continue;
+		}
+
 		shared_ptr<Player> player = make_shared<Player>(actorBaseAddr);
 		player->update();
+		player->bpCName = bpCName;
 
-		/*if (player->hp < 1)
+		/*uintptr_t healthStatsComponentAddr = Memory::get().read<uintptr_t>(actorBaseAddr + GlobalVars::get().ofs.healthStatsComponent_offset);
+		player->hp = Memory::get().read<char>(healthStatsComponentAddr + GlobalVars::get().ofs.health_offset);
+		cout << "hp=" << player->hp << endl;
+		if (player->hp < 1)
 		{
 			continue;
 		}*/
-
-		// 区分自己和其他人
-		if (player->type == PlayerType::other)
-		{
-			playerList.push_back(player);
-		}
-		if (player->type == PlayerType::oneself)
+		if (pawnAddr == actorBaseAddr)
 		{
 			localPlayer = player;
+			player->type = PlayerType::oneself;
 		}
-	}
-
-	// 区分敌人和队友
-	for (int i = 0; i < playerList.size(); i++)
-	{
-		if (localPlayer == nullptr || playerList[i] == nullptr)
+		else if (pawnBpCName == bpCName)
 		{
-			continue;
-		}
-
-		if (playerList[i]->bpCName == localPlayer->bpCName)
-		{
-			playerList[i]->type = PlayerType::team;
+			player->type = PlayerType::team;
+			playerList.push_back(player);
 		}
 		else
 		{
-			playerList[i]->type = PlayerType::enemy;
+			player->type = PlayerType::enemy;
+			playerList.push_back(player);
 		}
 	}
 }

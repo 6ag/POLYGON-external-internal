@@ -243,10 +243,21 @@ public:
 	// Actor数组地址
 	uintptr_t actorsAddr;
 
+	// GameInstance地址
+	uintptr_t gameInstanceAddr;
+	// LocalPlayer数组地址
+	uintptr_t localPlayersAddr;
+
 	struct Offsets
 	{
 		DWORD world = 0x057ED6B0; // 世界基址
 		DWORD gname = 0x569D350; // Gname基址
+
+		DWORD gameInstance_offset = 0x180; // GameInstance偏移
+		DWORD localPlayers_offset = 0x38; // LocalPlayer数组偏移
+
+		DWORD playerController_offset = 0x30; // PlayerController偏移，第一个元素是自己
+		DWORD pawn_offset = 0x250; // Pawn偏移，这个和Actor数组里的自己是同一个对象，可以用来区分自己
 
 		DWORD viewMatrix = 0x054017F0; // 矩阵基址
 		DWORD viewMatrix_offset1 = 0x20; // 矩阵偏移1
@@ -294,4 +305,7 @@ public:
 	void updatePlayerList();
 	// 打印地址偏移
 	void printOffsets();
+
+	// 读取name
+	std::string getBpCName(uintptr_t base);
 };

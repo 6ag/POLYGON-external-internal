@@ -16,7 +16,6 @@ void Renderer::drawFrames()
 	/*if (GlobalVars::get().localPlayer != nullptr && playerWorldToScreen(GlobalVars::get().localPlayer, matrix))
 	{
 		baseAddrEsp(GlobalVars::get().localPlayer);
-		lineEsp(GlobalVars::get().localPlayer);
 	}*/
 
 	//cout << GlobalVars::get().activeEnemyCounter << endl;
@@ -25,7 +24,7 @@ void Renderer::drawFrames()
 		if (playerWorldToScreen(GlobalVars::get().playerList[i], matrix))
 		{
 			// 通过骨骼去计算玩家是否是活的
-			if (!boneCheckPlayerActive(GlobalVars::get().playerList[i], matrix))
+			if (!boneCheckPlayerActive(GlobalVars::get().playerList[i], matrix)/*GlobalVars::get().playerList[i]->hp < 1*/)
 			{
 				continue;
 			}
@@ -48,10 +47,10 @@ void Renderer::drawFrames()
 				}
 
 				// 血量透视
-				/*if (Menu::get().hpEsp)
+				if (Menu::get().hpEsp)
 				{
 					hpEsp(GlobalVars::get().playerList[i]);
-				}*/
+				}
 
 				// 距离透视
 				if (Menu::get().distanceEsp)
@@ -76,7 +75,6 @@ void Renderer::drawFrames()
 			// 自瞄
 			if (Menu::get().aimbot && GlobalVars::get().playerList[i]->type == PlayerType::enemy && (GlobalVars::get().playerList[i]->distance > 5 && GlobalVars::get().playerList[i]->distance <= Menu::get().aimbotDistance) && lockAimTarget == nullptr)
 			{
-				// 开了瞄准镜后，计算不准确了
 				// 准星距离，目标距离准星的距离，取所有目标中距离准星最小的。还有一种筛选自瞄目标的方式是取所有目标距离自己最近的。
 				float xDiff = GlobalVars::get().drawRect.centerX - GlobalVars::get().playerList[i]->box.centerX;
 				float yDiff = GlobalVars::get().drawRect.centerY - GlobalVars::get().playerList[i]->box.centerY;
@@ -122,7 +120,7 @@ void Renderer::drawFrames()
 			if (aimCounter > 15)
 			{
 				// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
-				if (boneCheckPlayerActive(lockAimTarget, matrix))
+				if (boneCheckPlayerActive(lockAimTarget, matrix)/*lockAimTarget->hp > 1*/)
 				{
 					aimbot(lockAimTarget);
 				}
@@ -207,9 +205,14 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 			break;
 	}
 
-	drawImText(Vector2(tmpBox.centerX, tmpBox.y), player->bpCName.c_str(), color, false, 25);
-	//drawImText(Vector2(tmpBox.centerX, tmpBox.y), text, color, false, 25);
+	//drawImText(Vector2(tmpBox.centerX, tmpBox.y), player->bpCName.c_str(), color, false, 25);
+	drawImText(Vector2(tmpBox.centerX, tmpBox.y), text, color, false, 25);
 	drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), color);
+	lineEsp(player);
+
+	/*char hp[50];
+	sprintf_s(hp, "%.0f", player->hp);
+	drawImText(Vector2(tmpBox.centerX, tmpBox.y), hp, color, false, 25);*/
 }
 
 // 骨骼检测是否死亡
