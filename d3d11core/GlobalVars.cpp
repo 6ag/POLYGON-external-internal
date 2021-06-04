@@ -36,6 +36,12 @@ void GlobalVars::updateDrawRect()
 	// 窗口模式，窗口顶部的边框尺寸，也就是窗口标题栏高度
 	int winBorderTop = (marginRect.bottom - marginRect.top) - (overlayRect.bottom - overlayRect.top) - winBorderLeft;
 
+	// 计算绘制窗口区域
+	GlobalVars::get().drawRect = Rect(marginRect.left + winBorderLeft,
+									  marginRect.top + winBorderTop,
+									  overlayRect.right - overlayRect.left,
+									  overlayRect.bottom - overlayRect.top);
+
 	//cout << "整个窗口.顶 = " << marginRect.top << endl;
 	//cout << "整个窗口.底 = " << marginRect.bottom << endl;
 	//cout << "整个窗口.左 = " << marginRect.left << endl;
@@ -46,13 +52,6 @@ void GlobalVars::updateDrawRect()
 	//cout << "客户区窗口.右 = " << overlayRect.right << endl;
 	//cout << "winBorderLeft = " << winBorderLeft << endl;
 	//cout << "winBorderTop = " << winBorderTop << endl;
-
-	// 计算绘制窗口区域
-	GlobalVars::get().drawRect = Rect(marginRect.left + winBorderLeft,
-									  marginRect.top + winBorderTop,
-									  overlayRect.right - overlayRect.left,
-									  overlayRect.bottom - overlayRect.top);
-
 	//cout << "GlobalVars::get().drawRect.x = " << GlobalVars::get().drawRect.x << endl;
 	//cout << "GlobalVars::get().drawRect.y = " << GlobalVars::get().drawRect.y << endl;
 	//cout << "GlobalVars::get().drawRect.width = " << GlobalVars::get().drawRect.width << endl;

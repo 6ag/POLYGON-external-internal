@@ -148,10 +148,11 @@ void Renderer::drawFrames()
 	Menu::get().imGuiEnd();
 }
 
-static map<uintptr_t, int> baseMap;
 // 把Actor基址和一些测试数据绘制出来，用于测试
 void Renderer::baseAddrEsp(shared_ptr<Player> player)
 {
+	static map<uintptr_t, int> baseMap;
+
 	if (player->base == 0)
 	{
 		return;
@@ -159,7 +160,7 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 	char text[50];
 	sprintf_s(text, "0x%llX", player->base);
 
-	// counter 1-6，五颜六色的绘制，方便区分堆叠在一起的数据
+	// counter 1-6
 	static int counter = 0;
 	if (counter == 6)
 	{
@@ -171,6 +172,7 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 		baseMap[player->base] = counter;
 	}
 
+	// 五颜六色的绘制，方便区分堆叠在一起的数据
 	Color color = Color::Red;
 	switch (baseMap[player->base])
 	{
@@ -450,7 +452,7 @@ void Renderer::aimbot(shared_ptr<Player> player)
 // 将鼠标平滑移动指向瞄准目标
 void Renderer::aimAt(Vector2 targetPos)
 {
-	// 瞄准速度
+	// 瞄准速度，可以写到imgui菜单里
 	int aimSpeed = 12;
 	float screenCenterX = GlobalVars::get().drawRect.centerX;
 	float screenCenterY = GlobalVars::get().drawRect.centerY;

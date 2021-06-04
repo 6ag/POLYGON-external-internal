@@ -305,6 +305,9 @@ void initOverlayWindow()
 	bb.fEnable = TRUE;
 	DwmEnableBlurBehindWindow(GlobalVars::get().overlayHWindow, &bb);
 
+	// 设置DPI，防止绘制内容被缩放，MFC工程不用设置
+	SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+
 	// 初始化imgui
 	Menu::get().init();
 
