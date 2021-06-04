@@ -349,7 +349,6 @@ void initOverlayWindow()
 			SetWindowPos(GlobalVars::get().overlayHWindow, HWND_TOPMOST, GlobalVars::get().drawRect.x, GlobalVars::get().drawRect.y, GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height, SWP_SHOWWINDOW);
 			MoveWindow(GlobalVars::get().overlayHWindow, GlobalVars::get().drawRect.x, GlobalVars::get().drawRect.y, GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height, true);
 		}
-		//Sleep(1);
 	}
 
 	// 清理工作
