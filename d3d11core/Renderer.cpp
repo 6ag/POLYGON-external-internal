@@ -3,6 +3,7 @@
 #include "Menu.h"
 #include "Player.h"
 
+// 每帧执行的绘制函数
 void Renderer::drawFrames()
 {
 	Menu::get().imGuiStart();
@@ -148,8 +149,7 @@ void Renderer::drawFrames()
 }
 
 static map<uintptr_t, int> baseMap;
-
-// 基址透视，用于测试
+// 把Actor基址和一些测试数据绘制出来，用于测试
 void Renderer::baseAddrEsp(shared_ptr<Player> player)
 {
 	if (player->base == 0)
@@ -159,7 +159,7 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 	char text[50];
 	sprintf_s(text, "0x%llX", player->base);
 
-	// counter 1-6
+	// counter 1-6，五颜六色的绘制，方便区分堆叠在一起的数据
 	static int counter = 0;
 	if (counter == 6)
 	{
@@ -170,14 +170,6 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 	{
 		baseMap[player->base] = counter;
 	}
-
-	Rect tmpBox = player->box;
-	// 防止有些小东西计算出来宽度高度0
-	/*tmpBox.width = max(tmpBox.width, 100);
-	tmpBox.height = max(tmpBox.height, 200);*/
-
-	// 地址上下动
-	//tmpBox.y += 150 * cos(counter);
 
 	Color color = Color::Red;
 	switch (baseMap[player->base])
@@ -205,8 +197,8 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 			break;
 	}
 
-	//drawImText(Vector2(tmpBox.centerX, tmpBox.y), player->bpCName.c_str(), color, false, 25);
-	drawImText(Vector2(tmpBox.centerX, tmpBox.y), text, color, false, 25);
+	//drawImText(Vector2(player->box.centerX, player->box.y), player->bpCName.c_str(), color, false, 25);
+	drawImText(Vector2(player->box.centerX, player->box.y), text, color, false, 25);
 	drawImRect(Vector2(player->box.x, player->box.y), Vector2(player->box.width, player->box.height), color);
 	lineEsp(player);
 
@@ -221,9 +213,9 @@ bool Renderer::boneCheckPlayerActive(shared_ptr<Player> player, view_matrix_t ma
 	BoneData boneData;
 	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
 
-	if (boneWorldToScreen(screenSize, getBonePos(player->skeletonMatrixAddr, player->skeletonArrayAddr + 5 * 48), boneData.head, matrix))
+	if (boneWorldToScreen(screenSize, getBonePos(player->componentToWorldAddr, player->boneArrayAddr + 5 * 48), boneData.head, matrix))
 	{
-		if (boneWorldToScreen(screenSize, getBonePos(player->skeletonMatrixAddr, player->skeletonArrayAddr + 1 * 48), boneData.pelvis, matrix))
+		if (boneWorldToScreen(screenSize, getBonePos(player->componentToWorldAddr, player->boneArrayAddr + 1 * 48), boneData.pelvis, matrix))
 		{
 			if (boneData.head.x != boneData.pelvis.x && boneData.head.y != boneData.pelvis.y)
 			{
@@ -253,7 +245,7 @@ void Renderer::noRecoil()
 	// 057D5EF0 -> 30 -> 260 -> 580 -> 128 -> 2C8 第一把枪后坐力，设为0没后坐力。float
 	// 057D5EF0 -> 30 -> 260 -> 580 -> 130 -> 2C8 第一把枪后坐力，设为0没后坐力。float
 
-	// 子弹锁定
+	// 子弹锁定-锁定后没伤害
 	if (Menu::get().lockBullet)
 	{
 		uintptr_t bulletBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().baseAddr + 0x057E0360);
@@ -291,6 +283,7 @@ void Renderer::noRecoil()
 	}
 }
 
+// 世界坐标转屏幕坐标，大概估算方框的宽高
 bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matrix)
 {
 	float w = matrix[0][3] * player->origin.x + matrix[1][3] * player->origin.y + matrix[2][3] * player->origin.z + matrix[3][3];
@@ -315,6 +308,7 @@ bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matr
 	return true;
 }
 
+// 自瞄范围和准星
 void Renderer::aimbotRangeEsp()
 {
 	drawImCircle(GlobalVars::get().drawRect.getCenter(), Menu::get().aimbotRadius, 100, Color::White);
@@ -339,6 +333,7 @@ void Renderer::aimbotRangeEsp()
 	}
 }
 
+// 自瞄目标头上显示箭头
 void Renderer::aimbotArrowEsp(shared_ptr<Player> player)
 {
 	Color arrowColor = Color::Orange;
@@ -357,6 +352,7 @@ void Renderer::aimbotArrowEsp(shared_ptr<Player> player)
 			   1.5f);
 }
 
+// 方框透视
 void Renderer::boxEsp(shared_ptr<Player> player)
 {
 	float thikness = player->distance <= 100.f ? thikness = 1.f : thikness = 0.5f;
@@ -370,6 +366,7 @@ void Renderer::boxEsp(shared_ptr<Player> player)
 	}
 }
 
+// 连线透视
 void Renderer::lineEsp(shared_ptr<Player> player)
 {
 	float thikness = player->distance <= 100.f ? thikness = 1.f : thikness = 0.5f;
@@ -383,6 +380,7 @@ void Renderer::lineEsp(shared_ptr<Player> player)
 	}
 }
 
+// 血条透视
 void Renderer::hpEsp(shared_ptr<Player> player)
 {
 	double scale = (100.f / player->hp);
@@ -402,6 +400,7 @@ void Renderer::hpEsp(shared_ptr<Player> player)
 	drawImRect(Vector2(player->box.x - width * 2, player->box.y), Vector2(width + 1, player->box.height), Color::Black);
 }
 
+// 距离透视
 void Renderer::distanceEsp(shared_ptr<Player> player)
 {
 	char text[25];
@@ -416,6 +415,7 @@ void Renderer::distanceEsp(shared_ptr<Player> player)
 	}
 }
 
+// 自瞄，根据自瞄的目标和自瞄骨骼点计算出屏幕坐标
 void Renderer::aimbot(shared_ptr<Player> player)
 {
 	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
@@ -447,7 +447,7 @@ void Renderer::aimbot(shared_ptr<Player> player)
 	}
 }
 
-// 瞄准目标
+// 将鼠标平滑移动指向瞄准目标
 void Renderer::aimAt(Vector2 targetPos)
 {
 	// 瞄准速度
@@ -493,11 +493,11 @@ void Renderer::aimAt(Vector2 targetPos)
 	mouse_event(MOUSEEVENTF_MOVE, static_cast<DWORD>(targetX), static_cast<DWORD>(targetY), NULL, NULL);
 }
 
-// 绘制火柴人
+// 火柴人骨骼透视
 void Renderer::drawMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix, Color color)
 {
-	uintptr_t skeletonMatrixAddr = player->skeletonMatrixAddr;
-	uintptr_t skeletonArrayAddr = player->skeletonArrayAddr;
+	uintptr_t skeletonMatrixAddr = player->componentToWorldAddr;
+	uintptr_t skeletonArrayAddr = player->boneArrayAddr;
 	BoneData boneData;
 	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
 
@@ -578,16 +578,14 @@ void Renderer::drawMatchstickMen(shared_ptr<Player> player, view_matrix_t matrix
 	}
 }
 
-// 绘制测试骨骼
+// 绘制测试骨骼数据
 void Renderer::drawTest(shared_ptr<Player> player, view_matrix_t matrix, Color color)
 {
-	uintptr_t skeletonMatrixAddr = player->skeletonMatrixAddr;
-	uintptr_t skeletonArrayAddr = player->skeletonArrayAddr;
 	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
 	Vector2 bone2D;
 	for (int i = 0; i < 200; i++)
 	{
-		bool result = boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + i * 48), bone2D, matrix);
+		bool result = boneWorldToScreen(screenSize, getBonePos(player->componentToWorldAddr, player->boneArrayAddr + i * 48), bone2D, matrix);
 		if (result)
 		{
 			// 绘制文本来测试
@@ -598,21 +596,21 @@ void Renderer::drawTest(shared_ptr<Player> player, view_matrix_t matrix, Color c
 	}
 }
 
-// 骨骼坐标处理
-Vector3 Renderer::getBonePos(uintptr_t skeletonMatrixAddr, uintptr_t boneAddr)
+// 获取指定骨骼的世界坐标
+Vector3 Renderer::getBonePos(uintptr_t componentToWorldAddr, uintptr_t boneTransformAddr)
 {
-	FTransform bone;
-	FTransform actor;
+	FTransform boneTransform;
+	FTransform componentToWorld;
 	MyD3DXMATRIX boneMatrix;
 	MyD3DXMATRIX componentToWorldMatrix;
 	MyD3DXMATRIX newMatrix;
 	Vector3 retPos;
 
-	readTransform(bone, boneAddr);
-	readTransform(actor, skeletonMatrixAddr);
+	readTransform(boneTransform, boneTransformAddr);
+	readTransform(componentToWorld, componentToWorldAddr);
 
-	toMatrixWithScale(boneMatrix, bone.rotation, bone.translation, bone.scale3D);
-	toMatrixWithScale(componentToWorldMatrix, actor.rotation, actor.translation, actor.scale3D);
+	toMatrixWithScale(boneMatrix, boneTransform.rotation, boneTransform.translation, boneTransform.scale3D);
+	toMatrixWithScale(componentToWorldMatrix, componentToWorld.rotation, componentToWorld.translation, componentToWorld.scale3D);
 
 	boneMatrix.matrixMultiply(newMatrix, componentToWorldMatrix);
 
@@ -623,10 +621,11 @@ Vector3 Renderer::getBonePos(uintptr_t skeletonMatrixAddr, uintptr_t boneAddr)
 	return retPos;
 }
 
-// 读取transform信息
-void Renderer::readTransform(FTransform & out, uintptr_t addr)
+// 从内存中读取transform
+void Renderer::readTransform(FTransform & out, uintptr_t transformAddr)
 {
-	transform_matrix_t transformMatrix = Memory::get().read<transform_matrix_t>(addr);
+	// transform在内存中存储为3x4矩阵
+	transform_matrix_t transformMatrix = Memory::get().read<transform_matrix_t>(transformAddr);
 
 	out.rotation.x = transformMatrix[0][0];
 	out.rotation.y = transformMatrix[0][1];
@@ -711,65 +710,48 @@ bool Renderer::boneWorldToScreen(const Vector2 & screen_size, const Vector3 & po
 }
 
 // ------------------------------------------ImGui绘制------------------------------------------
-// im绘制初始化
-void Renderer::imDrawInit()
-{
-	if (!pImBuffer)
-	{
-		// 获得画笔对象
-		//pImBuffer = ImGui::GetBackgroundDrawList();
-		pImBuffer = ImGui::GetOverlayDrawList();
-	}
-}
-
 // 画线
 void Renderer::drawImLine(const Vector2 & p1, const Vector2 & p2, Color color, float thickness)
 {
-	imDrawInit();
-	pImBuffer->AddLine(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), GetU32(color), thickness);
+	ImGui::GetOverlayDrawList()->AddLine(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), GetU32(color), thickness);
 }
 
 // 画空心圆
 void Renderer::drawImCircle(const Vector2 & center, float radius, int numSegments, Color color, float thickness)
 {
-	imDrawInit();
-	pImBuffer->AddCircle(ImVec2(center.x, center.y), radius, GetU32(color), numSegments, thickness);
+	ImGui::GetOverlayDrawList()->AddCircle(ImVec2(center.x, center.y), radius, GetU32(color), numSegments, thickness);
 }
 
 // 画实心圆
 void Renderer::drawImCircleFilled(const Vector2 & center, float radius, int numSegments, Color color)
 {
-	imDrawInit();
-	pImBuffer->AddCircleFilled(ImVec2(center.x, center.y), radius, GetU32(color), numSegments);
+	ImGui::GetOverlayDrawList()->AddCircleFilled(ImVec2(center.x, center.y), radius, GetU32(color), numSegments);
 }
 
 // 画文字
 void Renderer::drawImText(const Vector2 & pos, const char * text, Color color, bool outline, float fontSize)
 {
-	imDrawInit();
 	ImVec2 vec2 = ImVec2(pos.x, pos.y);
 	ImVec2 textSize = Menu::get().pEspFont->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, text);
 	vec2.x -= textSize.x / 2.f;
 	if (outline)
 	{
-		pImBuffer->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x + 1, vec2.y + 1), GetU32(Color(0, 0, 0)), text);
-		pImBuffer->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x - 1, vec2.y - 1), GetU32(Color(0, 0, 0)), text);
-		pImBuffer->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x + 1, vec2.y - 1), GetU32(Color(0, 0, 0)), text);
-		pImBuffer->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x - 1, vec2.y + 1), GetU32(Color(0, 0, 0)), text);
+		ImGui::GetOverlayDrawList()->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x + 1, vec2.y + 1), GetU32(Color(0, 0, 0)), text);
+		ImGui::GetOverlayDrawList()->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x - 1, vec2.y - 1), GetU32(Color(0, 0, 0)), text);
+		ImGui::GetOverlayDrawList()->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x + 1, vec2.y - 1), GetU32(Color(0, 0, 0)), text);
+		ImGui::GetOverlayDrawList()->AddText(Menu::get().pEspFont, fontSize, ImVec2(vec2.x - 1, vec2.y + 1), GetU32(Color(0, 0, 0)), text);
 	}
-	pImBuffer->AddText(Menu::get().pEspFont, fontSize, vec2, GetU32(color), text);
+	ImGui::GetOverlayDrawList()->AddText(Menu::get().pEspFont, fontSize, vec2, GetU32(color), text);
 }
 
 // 画空心矩形
 void Renderer::drawImRect(const Vector2 & pos, const Vector2 & size, Color color, float thickness)
 {
-	imDrawInit();
-	pImBuffer->AddRect(ImVec2(pos.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), GetU32(color), 0, 0, thickness);
+	ImGui::GetOverlayDrawList()->AddRect(ImVec2(pos.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), GetU32(color), 0, 0, thickness);
 }
 
 // 画实心矩形
 void Renderer::drawImRectFilled(const Vector2 & pos, const Vector2 & size, Color color)
 {
-	imDrawInit();
-	pImBuffer->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), GetU32(color), 0, 0);
+	ImGui::GetOverlayDrawList()->AddRectFilled(ImVec2(pos.x, pos.y), ImVec2(pos.x + size.x, pos.y + size.y), GetU32(color), 0, 0);
 }

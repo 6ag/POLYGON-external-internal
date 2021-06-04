@@ -36,16 +36,16 @@ void GlobalVars::updateDrawRect()
 	// 窗口模式，窗口顶部的边框尺寸，也就是窗口标题栏高度
 	int winBorderTop = (marginRect.bottom - marginRect.top) - (overlayRect.bottom - overlayRect.top) - winBorderLeft;
 
-	/*cout << "整个窗口.顶 = " << marginRect.top << endl;
-	cout << "整个窗口.底 = " << marginRect.bottom << endl;
-	cout << "整个窗口.左 = " << marginRect.left << endl;
-	cout << "整个窗口.右 = " << marginRect.right << endl;
-	cout << "客户区窗口.顶 = " << overlayRect.top << endl;
-	cout << "客户区窗口.底 = " << overlayRect.bottom << endl;
-	cout << "客户区窗口.左 = " << overlayRect.left << endl;
-	cout << "客户区窗口.右 = " << overlayRect.right << endl;
-	cout << "winBorderLeft = " << winBorderLeft << endl;
-	cout << "winBorderTop = " << winBorderTop << endl;*/
+	//cout << "整个窗口.顶 = " << marginRect.top << endl;
+	//cout << "整个窗口.底 = " << marginRect.bottom << endl;
+	//cout << "整个窗口.左 = " << marginRect.left << endl;
+	//cout << "整个窗口.右 = " << marginRect.right << endl;
+	//cout << "客户区窗口.顶 = " << overlayRect.top << endl;
+	//cout << "客户区窗口.底 = " << overlayRect.bottom << endl;
+	//cout << "客户区窗口.左 = " << overlayRect.left << endl;
+	//cout << "客户区窗口.右 = " << overlayRect.right << endl;
+	//cout << "winBorderLeft = " << winBorderLeft << endl;
+	//cout << "winBorderTop = " << winBorderTop << endl;
 
 	// 计算绘制窗口区域
 	GlobalVars::get().drawRect = Rect(marginRect.left + winBorderLeft,
@@ -53,10 +53,10 @@ void GlobalVars::updateDrawRect()
 									  overlayRect.right - overlayRect.left,
 									  overlayRect.bottom - overlayRect.top);
 
-	/*cout << "GlobalVars::get().drawRect.x = " << GlobalVars::get().drawRect.x << endl;
-	cout << "GlobalVars::get().drawRect.y = " << GlobalVars::get().drawRect.y << endl;
-	cout << "GlobalVars::get().drawRect.width = " << GlobalVars::get().drawRect.width << endl;
-	cout << "GlobalVars::get().drawRect.height = " << GlobalVars::get().drawRect.height << endl;*/
+	//cout << "GlobalVars::get().drawRect.x = " << GlobalVars::get().drawRect.x << endl;
+	//cout << "GlobalVars::get().drawRect.y = " << GlobalVars::get().drawRect.y << endl;
+	//cout << "GlobalVars::get().drawRect.width = " << GlobalVars::get().drawRect.width << endl;
+	//cout << "GlobalVars::get().drawRect.height = " << GlobalVars::get().drawRect.height << endl;
 #else
 	RECT gameWindowRect;
 	POINT point = { 0 };
@@ -67,18 +67,19 @@ void GlobalVars::updateDrawRect()
 									  gameWindowRect.top,
 									  gameWindowRect.right,
 									  gameWindowRect.bottom);
-	/*cout << "游戏窗口.x = " << GlobalVars::get().drawRect.x << endl;
-	cout << "游戏窗口.y = " << GlobalVars::get().drawRect.y << endl;
-	cout << "游戏窗口.width = " << GlobalVars::get().drawRect.width << endl;
-	cout << "游戏窗口.height = " << GlobalVars::get().drawRect.height << endl;*/
+	//cout << "游戏窗口.x = " << GlobalVars::get().drawRect.x << endl;
+	//cout << "游戏窗口.y = " << GlobalVars::get().drawRect.y << endl;
+	//cout << "游戏窗口.width = " << GlobalVars::get().drawRect.width << endl;
+	//cout << "游戏窗口.height = " << GlobalVars::get().drawRect.height << endl;
 #endif
 }
 
-// BP_PG_Character_Blue_C
-// BP_PG_Character_Red_C
+// BP_PG_Character_Blue_C 蓝方
+// BP_PG_Character_Red_C 红方
 // 读取name
 std::string GlobalVars::getBpCName(uintptr_t base)
 {
+	// 获取ActorId
 	int objId = Memory::get().read<int>(base + 0x18);
 	UCHAR tableLocaltion = (UINT)(int)(objId >> 16);
 	ULONG rowLocaltion = (USHORT)objId;
@@ -150,6 +151,7 @@ void GlobalVars::updatePlayerList()
 		{
 			continue;
 		}*/
+		// LocalPlayer -> PlayerController -> Pawn 是自己，也是Actor
 		if (pawnAddr == actorBaseAddr)
 		{
 			localPlayer = player;

@@ -34,16 +34,16 @@ BOOL startFetchData()
 	}
 
 	// 获取进程ID和模块基址
-	GlobalVars::get().pId = Memory::get().getProcessId(GlobalVars::get().hWindow);
+	GlobalVars::get().pId = Memory::get().getProcessId(PROCESS_NAME);
+	GlobalVars::get().baseAddr = Memory::get().GetModuleBaseAddr(MODULE_NAME);
 #ifdef EXTERNAL_DRAW
 	GlobalVars::get().hProcess = Memory::get().getProcessHandle(GlobalVars::get().pId);
 	cout << "游戏进程句柄 = " << GlobalVars::get().hProcess << endl;
 #endif
-	GlobalVars::get().baseAddr = Memory::get().GetModuleBaseAddr(MODULE_NAME);
 
 	cout << "游戏进程ID = " << GlobalVars::get().pId << endl;
-	cout << "游戏窗口句柄 = " << GlobalVars::get().hWindow << endl;
 	cout << "游戏模块基址 = " << GlobalVars::get().baseAddr << endl;
+	cout << "游戏窗口句柄 = " << GlobalVars::get().hWindow << endl;
 
 	// 更新世界地址和矩阵地址
 	GlobalVars::get().updateWorldAddrAndViewMatrixAddr();
@@ -323,17 +323,17 @@ void initOverlayWindow()
 		GlobalVars::get().hWindow = FindWindow(GAME_WIN_CLASS, GAME_WIN_NAME);
 		if (GlobalVars::get().hWindow == NULL)
 		{
-			// 游戏窗口关闭，跳出循环
+			// 游戏窗口关闭，跳出循环，释放资源
 			break;
 		}
 
-		// 游戏窗口或绘制窗口没在最前端，暂停绘制
+		// 游戏窗口或绘制窗口没在最前端，暂停绘制。还可以方便开发的时候获取绘制的一些地址、数值
 		HWND hwnd = GetForegroundWindow();
 		if (GlobalVars::get().hWindow == hwnd || GlobalVars::get().overlayHWindow == hwnd)
 		{
 			// 更新世界地址和矩阵地址
 			GlobalVars::get().updateWorldAddrAndViewMatrixAddr();
-			// 更新绘制窗口尺寸。内部修改窗口尺寸会闪退
+			// 更新绘制窗口尺寸。内部修改窗口尺寸无效
 			GlobalVars::get().updateDrawRect();
 			// 更新玩家信息
 			GlobalVars::get().updatePlayerList();
@@ -360,15 +360,11 @@ void initOverlayWindow()
 // 可执行程序入口
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	GlobalVars::get().hWindow = FindWindow(GAME_WIN_CLASS, GAME_WIN_NAME);
-	if (GlobalVars::get().hWindow == NULL)
-	{
-		MessageBox(NULL, "未发现目标游戏窗口", "错误提示", MB_OK | MB_ICONERROR);
-		return 0;
-	}
 	startDebugWindow();
-	startFetchData();
-	initOverlayWindow();
+	if (startFetchData())
+	{
+		initOverlayWindow();
+	}
 	return 0;
 }
 
@@ -411,7 +407,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain * pSwapChain, UINT SyncInterval, UINT
 
 	// 更新世界地址和矩阵地址
 	GlobalVars::get().updateWorldAddrAndViewMatrixAddr();
-	// 更新绘制窗口尺寸。内部修改窗口尺寸会闪退
+	// 更新绘制窗口尺寸。内部修改窗口尺寸无效。游戏内部画面不会变
 	//GlobalVars::get().updateDrawRect();
 	// 更新玩家信息
 	GlobalVars::get().updatePlayerList();

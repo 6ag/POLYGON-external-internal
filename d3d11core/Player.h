@@ -21,9 +21,9 @@ public:
 	uintptr_t base = 0;
 
 	// 骨骼矩阵地址
-	uintptr_t skeletonMatrixAddr = 0;
+	uintptr_t componentToWorldAddr = 0;
 	// 骨骼数组地址
-	uintptr_t skeletonArrayAddr = 0;
+	uintptr_t boneArrayAddr = 0;
 
 	// 内存中读取的坐标
 	Vector3 origin;

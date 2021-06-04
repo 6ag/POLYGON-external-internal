@@ -54,6 +54,6 @@ void Player::update()
 
 	// 骨骼
 	uintptr_t meshAddr = Memory::get().read<uintptr_t>(base + GlobalVars::get().ofs.playerMesh_offset);
-	skeletonArrayAddr = Memory::get().read<uintptr_t>(meshAddr + GlobalVars::get().ofs.playerBoneArray_offset);
-	skeletonMatrixAddr = meshAddr + GlobalVars::get().ofs.playerComponentToWorld_offset;
+	boneArrayAddr = Memory::get().read<uintptr_t>(meshAddr + GlobalVars::get().ofs.playerBoneArray_offset);
+	componentToWorldAddr = meshAddr + GlobalVars::get().ofs.playerComponentToWorld_offset;
 }

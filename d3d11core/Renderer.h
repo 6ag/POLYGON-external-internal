@@ -11,9 +11,7 @@ public:
 	};
 	void increaseSpeed();
 
-	void imDrawInit();
 	void drawFrames();
-
 	void drawImText(const Vector2 & pos, const char * text, Color color, bool outline = false, float fontSize = 15.0f);
 	void drawImLine(const Vector2 & p1, const Vector2 & p2, Color color, float thickness = 1.0f);
 	void drawImCircle(const Vector2 & center, float radius, int numSegments, Color color, float thickness = 1.0f);
@@ -38,8 +36,6 @@ public:
 	ID3D11RenderTargetView * pMainRenderTargetView = nullptr;
 	// dx交换链
 	IDXGISwapChain * pSwapChain = nullptr;
-
-	ImDrawList * pImBuffer = nullptr;
 private:
 	void baseAddrEsp(shared_ptr<Player> player);
 	void noRecoil();
