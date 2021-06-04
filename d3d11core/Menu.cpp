@@ -52,11 +52,11 @@ void Menu::init()
 			lineEsp = true;
 			boneEsp = true;
 			distanceEsp = true;
-			openFriendEsp = true;
+			//openFriendEsp = true;
 			aimbot = true;
-			aimCross = true;
+			//aimCross = true;
 			noRecoil = true;
-			hpEsp = true;
+			//hpEsp = true;
 		}
 	}
 }

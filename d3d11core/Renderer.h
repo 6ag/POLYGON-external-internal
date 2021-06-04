@@ -11,6 +11,7 @@ public:
 	};
 	void increaseSpeed();
 
+	void testDrawFrames();
 	void drawFrames();
 	void drawImText(const Vector2 & pos, const char * text, Color color, bool outline = false, float fontSize = 15.0f);
 	void drawImLine(const Vector2 & p1, const Vector2 & p2, Color color, float thickness = 1.0f);
@@ -44,6 +45,7 @@ private:
 	void lineEsp(shared_ptr<Player> player);
 	void hpEsp(shared_ptr<Player> player);
 	void distanceEsp(shared_ptr<Player> player);
+	void itemEsp();
 
 	void aimbotRangeEsp();
 	void aimbotArrowEsp(shared_ptr<Player> player);

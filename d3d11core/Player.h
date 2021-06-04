@@ -25,8 +25,8 @@ public:
 	// 骨骼数组地址
 	uintptr_t boneArrayAddr = 0;
 
-	// 内存中读取的坐标
-	Vector3 origin;
+	// 内存中读取的世界坐标，一般除以100，单位就相当于米
+	Vector3 location;
 	// 距离
 	float distance = 0;
 	// 透视方框尺寸信息

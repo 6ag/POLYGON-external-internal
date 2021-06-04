@@ -209,7 +209,97 @@ void Renderer::baseAddrEsp(shared_ptr<Player> player)
 	drawImText(Vector2(tmpBox.centerX, tmpBox.y), hp, color, false, 25);*/
 }
 
-// 骨骼检测是否死亡
+// 物资并查集算法
+namespace ItemDisjointSet
+{
+	int fa[2000];
+
+	void initFa()
+	{
+		for (int i = 1; i < 2000; i++) fa[i] = i;
+	}
+
+	int get(int x)
+	{
+		if (fa[x] == x) return x;
+		return fa[x] = get(fa[x]);
+	}
+
+	void merge(int x, int y)
+	{
+		int fax = get(x), fay = get(y);
+		if (fax == fay) return;
+		fa[fax] = fay;
+	}
+}
+
+// 物资透视，并使用并查集排队挨得很近的物资
+void Renderer::itemEsp()
+{
+	// 最小合并距离
+	float distanceInmerge = 1.5;
+	// 排列间距
+	int margin = 2;
+	// 初始化并查集
+	ItemDisjointSet::initFa();
+
+	// 筛选出物品集合
+	vector<shared_ptr<Player>> itemList = GlobalVars::get().playerList;
+	int itemCount = itemList.size();
+	for (int i = 0; i < itemCount; i++)
+	{
+		for (int j = i + 1; j < itemCount; j++)
+		{
+			float distance = (itemList[j]->location - itemList[i]->location).length() / 100;
+			if (distance <= distanceInmerge)
+			{
+				ItemDisjointSet::merge(i + 1, j + 1);
+			}
+		}
+	}
+
+	// 重新组装过的item二维数组
+	std::vector<std::vector<shared_ptr<Player>>> buk(itemCount + 2);
+	// 重心位置数组
+	std::vector<Vector3> gravityCenter(itemCount + 2);
+	for (int i = 0; i < itemCount; i++)
+	{
+		int belongto = ItemDisjointSet::get(i + 1);
+		buk[belongto].push_back(itemList[i]);
+		gravityCenter[belongto] = gravityCenter[belongto] + itemList[i]->location;
+	}
+
+	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
+	Vector2 screenSize = Vector2(GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height);
+	for (int i = 1; i <= itemCount; i++)
+	{
+		if (buk[i].size() == 0) continue;
+
+		// 排序
+		//sort(buk[i].begin(), buk[i].end(), typeCmp);
+
+		// 重心位置
+		Vector3 gravityCenter3d = gravityCenter[i] / buk[i].size();
+
+		// 将重心位置转为屏幕坐标
+		Vector2 gravityCenter2d;
+		if (boneWorldToScreen(screenSize, gravityCenter3d, gravityCenter2d, matrix))
+		{
+			for (int j = 0; j < buk[i].size(); j++)
+			{
+				shared_ptr<Player> cur = buk[i][j];
+				//char text[50];
+				//sprintf_s(text, "0x%llX", cur->base);
+
+				ImVec2 textsize = Menu::get().pEspFont->CalcTextSizeA(20, 9999, 9999, cur->bpCName.c_str());
+				ImVec2 start = ImVec2(gravityCenter2d.x, gravityCenter2d.y + textsize.y * j + margin * j); // ^ gameDrawOffset;
+				ImGui::GetOverlayDrawList()->AddText(Menu::get().pEspFont, 20, start, GetU32(Color::White), cur->bpCName.c_str());
+			}
+		}
+	}
+}
+
+// 骨骼检测是否死亡，如果有所有人的血量，则不需要使用这种方式
 bool Renderer::boneCheckPlayerActive(shared_ptr<Player> player, view_matrix_t matrix)
 {
 	BoneData boneData;
@@ -288,16 +378,16 @@ void Renderer::noRecoil()
 // 世界坐标转屏幕坐标，大概估算方框的宽高
 bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matrix)
 {
-	float w = matrix[0][3] * player->origin.x + matrix[1][3] * player->origin.y + matrix[2][3] * player->origin.z + matrix[3][3];
+	float w = matrix[0][3] * player->location.x + matrix[1][3] * player->location.y + matrix[2][3] * player->location.z + matrix[3][3];
 	if (w < 0.001f)
 		return false;
 
 	// 目标和摄像机的距离
 	player->distance = w / 100.0f;
 
-	float centerX = GlobalVars::get().drawRect.centerX + (matrix[0][0] * player->origin.x + matrix[1][0] * player->origin.y + matrix[2][0] * player->origin.z + matrix[3][0]) / w * GlobalVars::get().drawRect.centerX;
-	float minY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->origin.x + matrix[1][1] * player->origin.y + matrix[2][1] * (player->origin.z + 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
-	float maxY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->origin.x + matrix[1][1] * player->origin.y + matrix[2][1] * (player->origin.z - 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
+	float centerX = GlobalVars::get().drawRect.centerX + (matrix[0][0] * player->location.x + matrix[1][0] * player->location.y + matrix[2][0] * player->location.z + matrix[3][0]) / w * GlobalVars::get().drawRect.centerX;
+	float minY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->location.x + matrix[1][1] * player->location.y + matrix[2][1] * (player->location.z + 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
+	float maxY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->location.x + matrix[1][1] * player->location.y + matrix[2][1] * (player->location.z - 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
 	// 为了模糊计算高度，这里把z坐标上下移动了100，来大概估算出人物高度
 
 	player->box.height = maxY - minY;
@@ -598,6 +688,22 @@ void Renderer::drawTest(shared_ptr<Player> player, view_matrix_t matrix, Color c
 	}
 }
 
+// 世界坐标转屏幕坐标
+bool Renderer::boneWorldToScreen(const Vector2 & screen_size, const Vector3 & pos, Vector2 & retPos, view_matrix_t matrix)
+{
+	float w = matrix[0][3] * pos.x + matrix[1][3] * pos.y + matrix[2][3] * pos.z + matrix[3][3];
+	if (w < 0.001f)
+		return false;
+
+	float x = screen_size.x * .5f + (matrix[0][0] * pos.x + matrix[1][0] * pos.y + matrix[2][0] * pos.z + matrix[3][0]) / w * screen_size.x * .5f;
+	float y = screen_size.y * .5f - (matrix[0][1] * pos.x + matrix[1][1] * pos.y + matrix[2][1] * pos.z + matrix[3][1]) / w * screen_size.y * .5f;
+
+	retPos.x = x;
+	retPos.y = y;
+
+	return true;
+}
+
 // 获取指定骨骼的世界坐标
 Vector3 Renderer::getBonePos(uintptr_t componentToWorldAddr, uintptr_t boneTransformAddr)
 {
@@ -693,22 +799,6 @@ void Renderer::toMatrixWithScale(MyD3DXMATRIX & out, Vector4 rotation, Vector3 t
 	out._24 = 0;
 	out._34 = 0;
 	out._44 = 1;
-}
-
-// 世界坐标转屏幕坐标
-bool Renderer::boneWorldToScreen(const Vector2 & screen_size, const Vector3 & pos, Vector2 & retPos, view_matrix_t matrix)
-{
-	float w = matrix[0][3] * pos.x + matrix[1][3] * pos.y + matrix[2][3] * pos.z + matrix[3][3];
-	if (w < 0.001f)
-		return false;
-
-	float x = screen_size.x * .5f + (matrix[0][0] * pos.x + matrix[1][0] * pos.y + matrix[2][0] * pos.z + matrix[3][0]) / w * screen_size.x * .5f;
-	float y = screen_size.y * .5f - (matrix[0][1] * pos.x + matrix[1][1] * pos.y + matrix[2][1] * pos.z + matrix[3][1]) / w * screen_size.y * .5f;
-
-	retPos.x = x;
-	retPos.y = y;
-
-	return true;
 }
 
 // ------------------------------------------ImGui绘制------------------------------------------

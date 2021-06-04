@@ -131,6 +131,10 @@ void GlobalVars::updatePlayerList()
 	for (int i = 0; i < GlobalVars::get().actorCount; i++)
 	{
 		uintptr_t actorBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().actorsAddr + i * 0x8);
+		if (actorBaseAddr == 0)
+		{
+			continue;
+		}
 
 		std::string bpCName = getBpCName(actorBaseAddr);
 		// 不属于双方阵营直接过滤

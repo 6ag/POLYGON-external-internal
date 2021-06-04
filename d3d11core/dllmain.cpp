@@ -342,6 +342,8 @@ void initOverlayWindow()
 			GlobalVars::get().updatePlayerList();
 			// 绘制开始
 			Renderer::get().drawFrames();
+			// 测试绘制
+			//Renderer::get().testDrawFrames();
 
 			// 使辅助窗口一直盖在游戏窗口上，这段代码需要降低执行频率
 			SetWindowPos(GlobalVars::get().overlayHWindow, HWND_TOPMOST, GlobalVars::get().drawRect.x, GlobalVars::get().drawRect.y, GlobalVars::get().drawRect.width, GlobalVars::get().drawRect.height, SWP_SHOWWINDOW);

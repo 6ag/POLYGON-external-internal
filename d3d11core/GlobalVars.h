@@ -73,6 +73,56 @@ struct Vector3
 	Vector3(float x, float y, float z) : x(x), y(y), z(z)
 	{
 	}
+
+	Vector3 operator+(Vector3 a)
+	{
+		this->x += a.x;
+		this->y += a.y;
+		this->z += a.z;
+		return *this;
+	}
+
+	Vector3 operator-(Vector3 a)
+	{
+		this->x -= a.x;
+		this->y -= a.y;
+		this->z -= a.z;
+		return *this;
+	}
+
+	Vector3 operator*(Vector3 a)
+	{
+		this->x *= a.x;
+		this->y *= a.y;
+		this->z *= a.z;
+		return *this;
+	}
+
+	Vector3 operator/(Vector3 a)
+	{
+		this->x /= a.x;
+		this->y /= a.y;
+		this->z /= a.z;
+		return *this;
+	}
+
+	Vector3 operator/(float a)
+	{
+		this->x /= a;
+		this->y /= a;
+		this->z /= a;
+		return *this;
+	}
+
+	float length()
+	{
+		return sqrt(pow(this->x, 2) + pow(this->y, 2) + pow(this->z, 2));
+	}
+
+	float distance(Vector3 f, Vector3 f1)
+	{
+		return sqrt(pow(f1.x - f.x, 2) + pow(f1.y - f.y, 2) + pow(f1.z - f.z, 2));
+	}
 };
 
 struct Vector4
