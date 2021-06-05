@@ -68,6 +68,10 @@ private:
 
 	// 自瞄锁定目标
 	shared_ptr<Player> lockAimTarget = nullptr;
+
+	// 被吸的目标
+	shared_ptr<Player> suckTarget = nullptr;
+
 	// 优化点按瞄准镜切换
 	int aimCounter = 0;
 };

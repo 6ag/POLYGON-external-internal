@@ -33,7 +33,7 @@
 // 内部和外部切换：修改 项目-属性-配置属性-常规-配置类型，选择 DLL动态库/EXE应用程序。
 // 如果是DLL动态库，则是内部绘制，需要注释EXTERNAL_DRAW宏
 // 如果是EXE应用程序，则是外部绘制，需要取消注释EXTERNAL_DRAW宏
-#define EXTERNAL_DRAW
+//#define EXTERNAL_DRAW
 
 // 进程和窗口的一些信息
 #ifdef EXTERNAL_DRAW
@@ -318,6 +318,7 @@ public:
 		DWORD actorArray_offset = 0xA8; // Actors数组偏移
 
 		DWORD actorPosition_offset = 0x130; // 玩家坐标偏移
+		DWORD actorJump_offset = 0x148; // 玩家跳高
 		DWORD actorPositionX_offset = 0x1D0; // 玩家X坐标偏移
 		DWORD actorPositionY_offset = 0x1D4; // 玩家Y坐标偏移
 		DWORD actorPositionZ_offset = 0x1D8; // 玩家Z坐标偏移

@@ -29,6 +29,9 @@ public:
 	bool noRecoil = false; // 无后座力
 	bool lockBullet = false; // 锁子弹
 
+	bool suckEnemy = false; // ALT吸人
+	int suckType = 0; // 吸人类型 0：最近的敌人 1：全部敌人
+
 	// imgui窗口字体
 	ImFont * pMenuFont = nullptr;
 	// 透视文字字体

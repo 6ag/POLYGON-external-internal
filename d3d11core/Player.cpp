@@ -48,9 +48,9 @@ void Player::update()
 
 	// 坐标
 	uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(base + GlobalVars::get().ofs.actorPosition_offset);
-	location.x = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset) + offsetX;
-	location.y = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset);
-	location.z = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset);
+	position.x = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset) + offsetX;
+	position.y = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset);
+	position.z = Memory::get().read<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset);
 
 	// 骨骼
 	uintptr_t meshAddr = Memory::get().read<uintptr_t>(base + GlobalVars::get().ofs.playerMesh_offset);

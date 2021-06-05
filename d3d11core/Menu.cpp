@@ -130,11 +130,16 @@ void Menu::imGuiStart()
 		ImGui::RadioButton(u8"胸部", &aimbotType, 1);
 		ImGui::Checkbox(u8"自苗准星", &aimCross);
 		ImGui::SliderInt(u8"自苗距离", &aimbotDistance, 5, 500);
-		ImGui::SliderInt(u8"自苗范围", &aimbotRadius, 50, 500);
+		ImGui::SliderInt(u8"自苗范围", &aimbotRadius, 50, 1000);
 		ImGui::SliderFloat(u8"射击间隔", &fireSpeed, 0.001f, 0.2f);
 		ImGui::Checkbox(u8"无后坐力+快速射击", &noRecoil);
 		// 无限子弹好像没伤害
 		ImGui::Checkbox(u8"无限子弹-不稳定功能", &lockBullet);
+
+		ImGui::TextColored(ImColor(0, 191, 255, 255), u8"吸人选项");
+		ImGui::Checkbox(u8"吸人 【长按ALT】", &suckEnemy);
+		ImGui::RadioButton(u8"最近敌人", &suckType, 0); ImGui::SameLine();
+		ImGui::RadioButton(u8"全部敌人", &suckType, 1);
 
 		// POLYGON速度改了走不动
 		/*ImGui::TextColored(ImColor(0, 191, 255, 255), u8"其他功能");

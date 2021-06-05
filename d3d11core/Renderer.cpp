@@ -7,17 +7,28 @@
 void Renderer::drawFrames()
 {
 	Menu::get().imGuiStart();
-	float minCrossCenter = 99999999.0f;
+
 
 	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
 
 	// 临时的最佳自瞄目标
+	float minCrossCenter = 99999999.0f;
 	shared_ptr<Player> bestAimTarget = nullptr;
 
-	/*if (GlobalVars::get().localPlayer != nullptr && playerWorldToScreen(GlobalVars::get().localPlayer, matrix))
-	{
-		baseAddrEsp(GlobalVars::get().localPlayer);
-	}*/
+	// 临时最近被吸目标
+	float minDistance = 99999999.0f;
+	shared_ptr<Player> bestSuckTarget = nullptr;
+
+	//if (GlobalVars::get().localPlayer != nullptr && playerWorldToScreen(GlobalVars::get().localPlayer, matrix))
+	//{
+	//	//baseAddrEsp(GlobalVars::get().localPlayer);
+
+	//	if (GetAsyncKeyState(VK_SPACE) == -32768)
+	//	{
+	//		uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().localPlayer->base + GlobalVars::get().ofs.actorPosition_offset);
+	//		Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorJump_offset, 1000);
+	//	}
+	//}
 
 	//cout << GlobalVars::get().activeEnemyCounter << endl;
 	for (int i = 0; i < GlobalVars::get().playerList.size(); i++)
@@ -97,11 +108,64 @@ void Renderer::drawFrames()
 		}
 	}
 
+	// ------------------------吸人开始------------------------
+	for (int i = 0; i < GlobalVars::get().playerList.size(); i++)
+	{
+		if (GlobalVars::get().localPlayer == nullptr)
+		{
+			break;
+		}
+
+		// ALT吸人，吸全部敌人
+		if (Menu::get().suckEnemy && Menu::get().suckType == 1 && GlobalVars::get().playerList[i]->type == PlayerType::enemy && GetAsyncKeyState(VK_LMENU) == -32768)
+		{
+			uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
+			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + 300);
+			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + 300);
+			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+		}
+
+		// 按下ALT，计算最近的敌人
+		if (Menu::get().suckEnemy && Menu::get().suckType == 0 && GlobalVars::get().playerList[i]->type == PlayerType::enemy && GetAsyncKeyState(VK_LMENU) == -32768 && suckTarget == nullptr)
+		{
+			float distance = (GlobalVars::get().playerList[i]->position - GlobalVars::get().localPlayer->position).length() / 100.0;
+			if (distance < minDistance)
+			{
+				minDistance = distance;
+				bestSuckTarget = GlobalVars::get().playerList[i];
+			}
+		}
+	}
+
+	if (Menu::get().suckEnemy && Menu::get().suckType == 0 && bestSuckTarget != nullptr)
+	{
+		// 锁定被吸目标
+		suckTarget = bestSuckTarget;
+	}
+
+	// 吸人
+	if (Menu::get().suckEnemy && Menu::get().suckType == 0 && GetAsyncKeyState(VK_LMENU) == -32768)
+	{
+		if (suckTarget != nullptr)
+		{
+			uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
+			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + 300);
+			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + 300);
+			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+		}
+	}
+	else
+	{
+		suckTarget = nullptr;
+	}
+	// ------------------------吸人结束------------------------
+
 	if (Menu::get().aimbot)
 	{
 		aimbotRangeEsp();
 	}
 
+	// ------------------------自瞄开始------------------------
 	if (Menu::get().aimbot && bestAimTarget != nullptr)
 	{
 		// 锁定自瞄目标
@@ -138,6 +202,7 @@ void Renderer::drawFrames()
 		aimCounter = 0;
 		lockAimTarget = nullptr;
 	}
+	// ------------------------自瞄结束------------------------
 
 	// 无后座
 	if (Menu::get().noRecoil || Menu::get().lockBullet)
@@ -250,7 +315,7 @@ void Renderer::itemEsp()
 	{
 		for (int j = i + 1; j < itemCount; j++)
 		{
-			float distance = (itemList[j]->location - itemList[i]->location).length() / 100;
+			float distance = (itemList[j]->position - itemList[i]->position).length() / 100;
 			if (distance <= distanceInmerge)
 			{
 				ItemDisjointSet::merge(i + 1, j + 1);
@@ -266,7 +331,7 @@ void Renderer::itemEsp()
 	{
 		int belongto = ItemDisjointSet::get(i + 1);
 		buk[belongto].push_back(itemList[i]);
-		gravityCenter[belongto] = gravityCenter[belongto] + itemList[i]->location;
+		gravityCenter[belongto] = gravityCenter[belongto] + itemList[i]->position;
 	}
 
 	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
@@ -378,16 +443,16 @@ void Renderer::noRecoil()
 // 世界坐标转屏幕坐标，大概估算方框的宽高
 bool Renderer::playerWorldToScreen(shared_ptr<Player> player, view_matrix_t matrix)
 {
-	float w = matrix[0][3] * player->location.x + matrix[1][3] * player->location.y + matrix[2][3] * player->location.z + matrix[3][3];
+	float w = matrix[0][3] * player->position.x + matrix[1][3] * player->position.y + matrix[2][3] * player->position.z + matrix[3][3];
 	if (w < 0.001f)
 		return false;
 
 	// 目标和摄像机的距离
 	player->distance = w / 100.0f;
 
-	float centerX = GlobalVars::get().drawRect.centerX + (matrix[0][0] * player->location.x + matrix[1][0] * player->location.y + matrix[2][0] * player->location.z + matrix[3][0]) / w * GlobalVars::get().drawRect.centerX;
-	float minY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->location.x + matrix[1][1] * player->location.y + matrix[2][1] * (player->location.z + 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
-	float maxY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->location.x + matrix[1][1] * player->location.y + matrix[2][1] * (player->location.z - 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
+	float centerX = GlobalVars::get().drawRect.centerX + (matrix[0][0] * player->position.x + matrix[1][0] * player->position.y + matrix[2][0] * player->position.z + matrix[3][0]) / w * GlobalVars::get().drawRect.centerX;
+	float minY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->position.x + matrix[1][1] * player->position.y + matrix[2][1] * (player->position.z + 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
+	float maxY = GlobalVars::get().drawRect.centerY - (matrix[0][1] * player->position.x + matrix[1][1] * player->position.y + matrix[2][1] * (player->position.z - 110) + matrix[3][1]) / w * GlobalVars::get().drawRect.centerY;
 	// 为了模糊计算高度，这里把z坐标上下移动了100，来大概估算出人物高度
 
 	player->box.height = maxY - minY;
