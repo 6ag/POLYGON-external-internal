@@ -716,8 +716,8 @@ void Renderer::aimbot(shared_ptr<Player> player)
 // 将鼠标平滑移动指向瞄准目标
 void Renderer::aimAt(Vector2 targetPos)
 {
-	// 瞄准速度，可以写到imgui菜单里
-	int aimSpeed = 12;
+	// 瞄准速度
+	int aimSpeed = Menu::get().aimbotSpeed;
 	float screenCenterX = GlobalVars::get().drawRect.centerX;
 	float screenCenterY = GlobalVars::get().drawRect.centerY;
 	float targetX = 0;

@@ -444,7 +444,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:
-			startDebugWindow();
+			//startDebugWindow();
 			DisableThreadLibraryCalls(hModule);
 			CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)mainThread, hModule, NULL, NULL);
 			break;

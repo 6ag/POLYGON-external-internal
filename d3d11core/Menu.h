@@ -23,6 +23,7 @@ public:
 	bool boneEsp = false; // 骨骼透视
 	bool aimbot = false; // 自瞄
 	bool aimCross = false; // 准星
+	int aimbotSpeed = 12; // 自瞄速度
 	int aimbotType = 0; // 0：头部 1：胸部
 	float moveSpeed = 1.0f; // 移动速度
 	float fireSpeed = 0.05f; // 开火速度

@@ -132,6 +132,7 @@ void Menu::imGuiStart()
 		ImGui::Checkbox(u8"自苗准星", &aimCross);
 		ImGui::SliderInt(u8"自苗距离", &aimbotDistance, 5, 500);
 		ImGui::SliderInt(u8"自苗范围", &aimbotRadius, 50, 1000);
+		ImGui::SliderInt(u8"自苗速度", &aimbotSpeed, 4, 20);
 		ImGui::SliderFloat(u8"射击间隔", &fireSpeed, 0.001f, 0.2f);
 		ImGui::Checkbox(u8"无后坐力+快速射击", &noRecoil);
 		// 无限子弹好像没伤害
