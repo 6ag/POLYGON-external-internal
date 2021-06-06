@@ -119,7 +119,6 @@ void GlobalVars::updatePlayerList()
 	uintptr_t pawnAddr = Memory::get().read<uintptr_t>(playerControllerAddr + GlobalVars::get().ofs.pawn_offset);
 	std::string pawnBpCName = getBpCName(pawnAddr);
 
-
 	GlobalVars::get().uLevelAddr = Memory::get().read<uintptr_t>(GlobalVars::get().worldAddr + GlobalVars::get().ofs.uLevel_offset);
 	GlobalVars::get().actorCount = Memory::get().read<int>(GlobalVars::get().uLevelAddr + GlobalVars::get().ofs.actorCount_offset);
 	GlobalVars::get().actorsAddr = Memory::get().read<uintptr_t>(GlobalVars::get().uLevelAddr + GlobalVars::get().ofs.actorArray_offset);

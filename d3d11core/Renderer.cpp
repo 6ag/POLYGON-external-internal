@@ -119,13 +119,26 @@ void Renderer::drawFrames()
 		// ALT吸人，吸全部敌人
 		if (Menu::get().suckEnemy && Menu::get().suckType == 1 && GlobalVars::get().playerList[i]->type == PlayerType::enemy && GetAsyncKeyState(VK_LMENU) == -32768)
 		{
-			uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
-			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + 300);
-			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + 300);
-			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+			if (Menu::get().suckFollowType == 0)
+			{
+				// 固定位置
+				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + Menu::get().suckX * 100);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + Menu::get().suckY * 100);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+			}
+			else
+			{
+				// 计算玩家前方3米的坐标
+				Vector3 newV3 = getLocalPlayerForwardPos(3);
+				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, newV3.x);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, newV3.y);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+			}
 		}
 
-		// 按下ALT，计算最近的敌人
+		// 按下ALT，计算最近的敌人，人死了后坐标还在，方框消失了，也要等几秒。所以死了后会有几秒钟没法吸人。
 		if (Menu::get().suckEnemy && Menu::get().suckType == 0 && GlobalVars::get().playerList[i]->type == PlayerType::enemy && GetAsyncKeyState(VK_LMENU) == -32768 && suckTarget == nullptr)
 		{
 			float distance = (GlobalVars::get().playerList[i]->position - GlobalVars::get().localPlayer->position).length() / 100.0;
@@ -146,12 +159,26 @@ void Renderer::drawFrames()
 	// 吸人
 	if (Menu::get().suckEnemy && Menu::get().suckType == 0 && GetAsyncKeyState(VK_LMENU) == -32768)
 	{
-		if (suckTarget != nullptr)
+		if (suckTarget != nullptr && GlobalVars::get().localPlayer != nullptr)
 		{
-			uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
-			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + 300);
-			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + 300);
-			Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+			if (Menu::get().suckFollowType == 0)
+			{
+				// 固定位置
+				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + Menu::get().suckX * 100);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + Menu::get().suckY * 300);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+			}
+			else
+			{
+				// 计算玩家前方3米的坐标
+				Vector3 newV3 = getLocalPlayerForwardPos(3);
+
+				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, newV3.x);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, newV3.y);
+				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+			}
 		}
 	}
 	else
@@ -211,6 +238,36 @@ void Renderer::drawFrames()
 	}
 
 	Menu::get().imGuiEnd();
+}
+
+// 计算玩家前方指定距离的坐标，distance单位米
+Vector3 Renderer::getLocalPlayerForwardPos(float distance)
+{
+	if (GlobalVars::get().localPlayer == nullptr)
+	{
+		cout << "本地玩家没了" << endl;
+		return Vector3();
+	}
+
+	uintptr_t localPlayerBaseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().localPlayersAddr);
+	uintptr_t playerControllerAddr = Memory::get().read<uintptr_t>(localPlayerBaseAddr + GlobalVars::get().ofs.playerController_offset);
+	uintptr_t cameraManagerAddr = Memory::get().read<uintptr_t>(playerControllerAddr + GlobalVars::get().ofs.cameraManager_offset);
+	float pitch = Memory::get().read<float>(cameraManagerAddr + 0x1aa0 + 0x10 + 0x0c);
+	float yaw = Memory::get().read<float>(cameraManagerAddr + 0x1aa0 + 0x10 + 0x0c + 0x4);
+
+	// 将摄像机的FRotator转为FVector
+	float cp, sp, cy, sy;
+	sp = sin(pitch * (3.14159265f / 180.f));
+	cp = cos(pitch * (3.14159265f / 180.f));
+	sy = sin(yaw * (3.14159265f / 180.f));
+	cy = cos(yaw * (3.14159265f / 180.f));
+	Vector3 cameraV3 = Vector3(cp * cy, cp * sy, sp);
+
+	// 计算玩家前方指定距离的坐标
+	float len = sqrt(distance * 100 * 100 + distance * 100 * 100);
+	Vector3 newV3 = GlobalVars::get().localPlayer->position + cameraV3 * len;
+	cout << "pitch=" << pitch << ",yaw=" << yaw << ",x=" << newV3.x << ",y=" << newV3.y << ",z=" << newV3.z << endl;
+	return newV3;
 }
 
 // 把Actor基址和一些测试数据绘制出来，用于测试

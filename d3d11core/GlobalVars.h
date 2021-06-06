@@ -106,6 +106,14 @@ struct Vector3
 		return *this;
 	}
 
+	Vector3 operator*(float a)
+	{
+		this->x *= a;
+		this->y *= a;
+		this->z *= a;
+		return *this;
+	}
+
 	Vector3 operator/(float a)
 	{
 		this->x /= a;
@@ -307,7 +315,9 @@ public:
 		DWORD localPlayers_offset = 0x38; // LocalPlayer数组偏移
 
 		DWORD playerController_offset = 0x30; // PlayerController偏移，第一个元素是自己
+
 		DWORD pawn_offset = 0x250; // Pawn偏移，这个和Actor数组里的自己是同一个对象，可以用来区分自己
+		DWORD cameraManager_offset = 0x2b8; // 相机管理者，和Pawn都在PlayerController下
 
 		DWORD viewMatrix = 0x054017F0; // 矩阵基址
 		DWORD viewMatrix_offset1 = 0x20; // 矩阵偏移1
@@ -329,7 +339,7 @@ public:
 		DWORD playerComponentToWorld_offset = 0x1C0; // 玩家阵列偏移
 		DWORD playerBoneArray_offset = 0x4A0; // 玩家骨骼数组偏移
 
-		DWORD playerHp_offset = 0x7C4; // 血量偏移-错误
+		DWORD playerHp_offset = 0xd0; // 血量偏移-错误0x7C4
 
 		// 057E0360 -> 0 -> A0 -> 580 -> 128 -> 300 第一把枪子弹数量 int
 		// 057E0360 -> 0 -> A0 -> 580 -> 130 -> 300 第二把枪子弹数量 int

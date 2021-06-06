@@ -46,6 +46,7 @@ private:
 	void hpEsp(shared_ptr<Player> player);
 	void distanceEsp(shared_ptr<Player> player);
 	void itemEsp();
+	Vector3 getLocalPlayerForwardPos(float distance);
 
 	void aimbotRangeEsp();
 	void aimbotArrowEsp(shared_ptr<Player> player);

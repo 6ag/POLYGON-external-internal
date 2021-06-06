@@ -30,7 +30,10 @@ public:
 	bool lockBullet = false; // 锁子弹
 
 	bool suckEnemy = false; // ALT吸人
+	int suckFollowType = 0; // 吸人跟随位置 0：固定位置 1：玩家正前方
 	int suckType = 0; // 吸人类型 0：最近的敌人 1：全部敌人
+	int suckX = 3; // 吸人位于玩家X轴距离，单位米
+	int suckY = 3; // 吸人位于玩家Y轴距离，单位米
 
 	// imgui窗口字体
 	ImFont * pMenuFont = nullptr;

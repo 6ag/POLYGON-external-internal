@@ -57,6 +57,7 @@ void Menu::init()
 			//aimCross = true;
 			noRecoil = true;
 			//hpEsp = true;
+			suckEnemy = true;
 		}
 	}
 }
@@ -140,6 +141,10 @@ void Menu::imGuiStart()
 		ImGui::Checkbox(u8"吸人 【长按ALT】", &suckEnemy);
 		ImGui::RadioButton(u8"最近敌人", &suckType, 0); ImGui::SameLine();
 		ImGui::RadioButton(u8"全部敌人", &suckType, 1);
+		ImGui::RadioButton(u8"吸到固定位置", &suckFollowType, 0); ImGui::SameLine();
+		ImGui::RadioButton(u8"吸到玩家正前方", &suckFollowType, 1);
+		ImGui::SliderInt(u8"吸到固定位置X偏移", &suckX, -3, 3);
+		ImGui::SliderInt(u8"吸到固定位置Y偏移", &suckY, -3, 3);
 
 		// POLYGON速度改了走不动
 		/*ImGui::TextColored(ImColor(0, 191, 255, 255), u8"其他功能");
