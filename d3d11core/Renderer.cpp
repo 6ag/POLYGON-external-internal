@@ -3,6 +3,8 @@
 #include "Menu.h"
 #include "Player.h"
 
+BOOL CopyToClipboard(const char * pszData, const int nDataLen);
+
 // 每帧执行的绘制函数
 void Renderer::drawFrames()
 {
@@ -129,22 +131,26 @@ void Renderer::drawFrames()
 		// ALT吸人，吸全部敌人
 		if (Menu::get().suckEnemy && Menu::get().suckType == 1 && GlobalVars::get().playerList[i]->type == PlayerType::enemy && GetAsyncKeyState(VK_LMENU) == -32768)
 		{
-			if (Menu::get().suckFollowType == 0)
+			// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
+			if (boneCheckPlayerActive(GlobalVars::get().playerList[i], matrix)/*lockAimTarget->hp > 1*/)
 			{
-				// 固定位置
-				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + Menu::get().suckX * 100);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + Menu::get().suckY * 100);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
-			}
-			else
-			{
-				// 计算玩家前方3米的坐标
-				Vector3 newV3 = getLocalPlayerForwardPos(3);
-				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, newV3.x);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, newV3.y);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+				if (Menu::get().suckFollowType == 0)
+				{
+					// 固定位置
+					uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + Menu::get().suckX * 100);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + Menu::get().suckY * 100);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+				}
+				else
+				{
+					// 计算玩家前方3米的坐标
+					Vector3 newV3 = getLocalPlayerForwardPos(3);
+					uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(GlobalVars::get().playerList[i]->base + GlobalVars::get().ofs.actorPosition_offset);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, newV3.x);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, newV3.y);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+				}
 			}
 		}
 
@@ -171,23 +177,31 @@ void Renderer::drawFrames()
 	{
 		if (suckTarget != nullptr && GlobalVars::get().localPlayer != nullptr)
 		{
-			if (Menu::get().suckFollowType == 0)
+			// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
+			if (boneCheckPlayerActive(suckTarget, matrix)/*lockAimTarget->hp > 1*/)
 			{
-				// 固定位置
-				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + Menu::get().suckX * 100);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + Menu::get().suckY * 300);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+				if (Menu::get().suckFollowType == 0)
+				{
+					// 固定位置
+					uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, GlobalVars::get().localPlayer->position.x + Menu::get().suckX * 100);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, GlobalVars::get().localPlayer->position.y + Menu::get().suckY * 300);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+				}
+				else
+				{
+					// 计算玩家前方3米的坐标
+					Vector3 newV3 = getLocalPlayerForwardPos(3);
+
+					uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, newV3.x);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, newV3.y);
+					Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+				}
 			}
 			else
 			{
-				// 计算玩家前方3米的坐标
-				Vector3 newV3 = getLocalPlayerForwardPos(3);
-
-				uintptr_t playerOriginAddr = Memory::get().read<uintptr_t>(suckTarget->base + GlobalVars::get().ofs.actorPosition_offset);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionX_offset, newV3.x);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionY_offset, newV3.y);
-				Memory::get().write<float>(playerOriginAddr + GlobalVars::get().ofs.actorPositionZ_offset, GlobalVars::get().localPlayer->position.z + 5);
+				suckTarget = nullptr;
 			}
 		}
 	}
@@ -225,6 +239,14 @@ void Renderer::drawFrames()
 				// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
 				if (boneCheckPlayerActive(lockAimTarget, matrix)/*lockAimTarget->hp > 1*/)
 				{
+					//char text[50];
+					//sprintf_s(text, "0x%llX", lockAimTarget->base);
+					//drawImText(Vector2(lockAimTarget->box.x, lockAimTarget->box.y + lockAimTarget->box.height), text, Menu::get().espColor, true, 30);
+					//// 按ALT拷贝
+					//if (GetAsyncKeyState(VK_LMENU) == -32768)
+					//{
+					//	CopyToClipboard(text, 20);
+					//}
 					aimbot(lockAimTarget);
 				}
 				else
@@ -249,6 +271,25 @@ void Renderer::drawFrames()
 	}
 
 	Menu::get().imGuiEnd();
+}
+
+// 复制数据至剪切板
+BOOL CopyToClipboard(const char * pszData, const int nDataLen)
+{
+	if (::OpenClipboard(NULL))
+	{
+		::EmptyClipboard();
+		HGLOBAL clipbuffer;
+		char * buffer;
+		clipbuffer = ::GlobalAlloc(GMEM_DDESHARE, nDataLen + 1);
+		buffer = (char *)::GlobalLock(clipbuffer);
+		strcpy(buffer, pszData);
+		::GlobalUnlock(clipbuffer);
+		::SetClipboardData(CF_TEXT, clipbuffer);
+		::CloseClipboard();
+		return TRUE;
+	}
+	return FALSE;
 }
 
 // 计算玩家前方指定距离的坐标，distance单位米

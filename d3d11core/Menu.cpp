@@ -57,7 +57,7 @@ void Menu::init()
 			//aimCross = true;
 			noRecoil = true;
 			//hpEsp = true;
-			suckEnemy = true;
+			//suckEnemy = true;
 		}
 	}
 }

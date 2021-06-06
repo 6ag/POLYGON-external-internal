@@ -339,7 +339,7 @@ public:
 		DWORD playerComponentToWorld_offset = 0x1C0; // 玩家阵列偏移
 		DWORD playerBoneArray_offset = 0x4A0; // 玩家骨骼数组偏移
 
-		DWORD playerHp_offset = 0xd0; // 血量偏移-错误0x7C4
+		DWORD playerHp_offset = 0x7C4; // 血量偏移-错误0x7C4
 
 		// 057E0360 -> 0 -> A0 -> 580 -> 128 -> 300 第一把枪子弹数量 int
 		// 057E0360 -> 0 -> A0 -> 580 -> 130 -> 300 第二把枪子弹数量 int
