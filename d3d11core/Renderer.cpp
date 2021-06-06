@@ -30,6 +30,16 @@ void Renderer::drawFrames()
 	//	}
 	//}
 
+	// Shift跑不消耗气力值
+	if (GlobalVars::get().localPlayer != nullptr)
+	{
+		if (GetAsyncKeyState(VK_LSHIFT) == -32768)
+		{
+			uintptr_t healthStatsComponentAddr = Memory::get().read<uintptr_t>(GlobalVars::get().localPlayer->base + 0x578);
+			Memory::get().write<float>(healthStatsComponentAddr + 0xd4, 100.0f);
+		}
+	}
+
 	//cout << GlobalVars::get().activeEnemyCounter << endl;
 	for (int i = 0; i < GlobalVars::get().playerList.size(); i++)
 	{
@@ -187,6 +197,7 @@ void Renderer::drawFrames()
 	}
 	// ------------------------吸人结束------------------------
 
+	// 绘制自瞄范围圈
 	if (Menu::get().aimbot)
 	{
 		aimbotRangeEsp();
@@ -245,7 +256,7 @@ Vector3 Renderer::getLocalPlayerForwardPos(float distance)
 {
 	if (GlobalVars::get().localPlayer == nullptr)
 	{
-		cout << "本地玩家没了" << endl;
+		//cout << "本地玩家没了" << endl;
 		return Vector3();
 	}
 
@@ -266,7 +277,7 @@ Vector3 Renderer::getLocalPlayerForwardPos(float distance)
 	// 计算玩家前方指定距离的坐标
 	float len = sqrt(distance * 100 * 100 + distance * 100 * 100);
 	Vector3 newV3 = GlobalVars::get().localPlayer->position + cameraV3 * len;
-	cout << "pitch=" << pitch << ",yaw=" << yaw << ",x=" << newV3.x << ",y=" << newV3.y << ",z=" << newV3.z << endl;
+	//cout << "pitch=" << pitch << ",yaw=" << yaw << ",x=" << newV3.x << ",y=" << newV3.y << ",z=" << newV3.z << endl;
 	return newV3;
 }
 

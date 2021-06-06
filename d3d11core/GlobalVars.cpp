@@ -146,13 +146,15 @@ void GlobalVars::updatePlayerList()
 		player->update();
 		player->bpCName = bpCName;
 
-		/*uintptr_t healthStatsComponentAddr = Memory::get().read<uintptr_t>(actorBaseAddr + GlobalVars::get().ofs.healthStatsComponent_offset);
-		player->hp = Memory::get().read<char>(healthStatsComponentAddr + GlobalVars::get().ofs.health_offset);
-		cout << "hp=" << player->hp << endl;
-		if (player->hp < 1)
-		{
-			continue;
-		}*/
+		// 只能读取到自己的血量变化，敌人的血量一直是100
+		//uintptr_t healthStatsComponentAddr = Memory::get().read<uintptr_t>(actorBaseAddr + 0x578);
+		//player->hp = Memory::get().read<int>(healthStatsComponentAddr + 0xd0);
+		////cout << "hp=" << player->hp << endl;
+		//if (player->hp < 1)
+		//{
+		//	continue;
+		//}
+
 		// LocalPlayer -> PlayerController -> Pawn 是自己，也是Actor
 		if (pawnAddr == actorBaseAddr)
 		{
