@@ -47,8 +47,8 @@ void Renderer::drawFrames()
 	{
 		if (playerWorldToScreen(GlobalVars::get().playerList[i], matrix))
 		{
-			// 通过骨骼去计算玩家是否是活的
-			if (!boneCheckPlayerActive(GlobalVars::get().playerList[i], matrix)/*GlobalVars::get().playerList[i]->hp < 1*/)
+			// 判断玩家是否是活的
+			if (!alwaysRelevantCheckPlayerActive(GlobalVars::get().playerList[i])/*GlobalVars::get().playerList[i]->hp < 1*/)
 			{
 				continue;
 			}
@@ -131,8 +131,8 @@ void Renderer::drawFrames()
 		// ALT吸人，吸全部敌人
 		if (Menu::get().suckEnemy && Menu::get().suckType == 1 && GlobalVars::get().playerList[i]->type == PlayerType::enemy && GetAsyncKeyState(VK_LMENU) == -32768)
 		{
-			// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
-			if (boneCheckPlayerActive(GlobalVars::get().playerList[i], matrix)/*lockAimTarget->hp > 1*/)
+			// 判断玩家是否是活的，如果能找到血量，用血量判断更好
+			if (alwaysRelevantCheckPlayerActive(GlobalVars::get().playerList[i])/*lockAimTarget->hp > 1*/)
 			{
 				if (Menu::get().suckFollowType == 0)
 				{
@@ -177,8 +177,8 @@ void Renderer::drawFrames()
 	{
 		if (suckTarget != nullptr && GlobalVars::get().localPlayer != nullptr)
 		{
-			// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
-			if (boneCheckPlayerActive(suckTarget, matrix)/*lockAimTarget->hp > 1*/)
+			// 判断玩家是否是活的，如果能找到血量，用血量判断更好
+			if (alwaysRelevantCheckPlayerActive(suckTarget)/*lockAimTarget->hp > 1*/)
 			{
 				if (Menu::get().suckFollowType == 0)
 				{
@@ -236,8 +236,8 @@ void Renderer::drawFrames()
 			aimCounter++;
 			if (aimCounter > 15)
 			{
-				// 通过骨骼去计算玩家是否是活的，如果能找到血量，用血量判断更好
-				if (boneCheckPlayerActive(lockAimTarget, matrix)/*lockAimTarget->hp > 1*/)
+				// 判断玩家是否是活的，如果能找到血量，用血量判断更好
+				if (alwaysRelevantCheckPlayerActive(lockAimTarget)/*lockAimTarget->hp > 1*/)
 				{
 					//char text[50];
 					//sprintf_s(text, "0x%llX", lockAimTarget->base);
@@ -471,6 +471,19 @@ void Renderer::itemEsp()
 			}
 		}
 	}
+}
+
+// 检查Actor的bAlwaysRelevant来判断是否死亡
+bool Renderer::alwaysRelevantCheckPlayerActive(shared_ptr<Player> player)
+{
+	int alwaysRelevant = Memory::get().read<char>(player->base + 0x58);
+	if (alwaysRelevant == -112)
+	{
+		// 没死
+		return true;
+	}
+	// 人死了
+	return false;
 }
 
 // 骨骼检测是否死亡，如果有所有人的血量，则不需要使用这种方式
