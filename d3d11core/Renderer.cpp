@@ -684,14 +684,6 @@ void Renderer::distanceEsp(shared_ptr<Player> player)
 // 自瞄，根据自瞄的目标和自瞄骨骼点计算出屏幕坐标
 void Renderer::aimbot(shared_ptr<Player> player)
 {
-	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
-	uintptr_t meshAddr = Memory::get().read<uintptr_t>(player->base + GlobalVars::get().ofs.playerMesh_offset);
-	uintptr_t skeletonArrayAddr = Memory::get().read<uintptr_t>(meshAddr + GlobalVars::get().ofs.playerBoneArray_offset);
-	uintptr_t skeletonMatrixAddr = meshAddr + GlobalVars::get().ofs.playerComponentToWorld_offset;
-
-	Vector2 screenSize = GlobalVars::get().drawRect.getSize();
-	Vector2 bone2D;
-
 	int index = 5;
 	if (Menu::get().aimbotType == 0)
 	{
@@ -701,16 +693,44 @@ void Renderer::aimbot(shared_ptr<Player> player)
 	{
 		index = 3;
 	}
-	if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48), bone2D, matrix))
-	{
-		/*cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
-		cout << "centerX=" << GlobalVars::get().drawRect.centerX << ",centerY=" << GlobalVars::get().drawRect.centerY << endl;*/
-		// 缩放率越大，移动越平滑，但太过大会移动缓慢。缩放率越小，移动就越快速，加速度可能还会让镜头甩动
-		//float scaleRate = 6.0f;
-		//mouse_event(MOUSEEVENTF_MOVE, (bone2D.x - GlobalVars::get().drawRect.centerX) / scaleRate, (bone2D.y - GlobalVars::get().drawRect.centerY) / scaleRate, 0, 0);
 
-		aimAt(bone2D);
-	}
+	view_matrix_t matrix = Memory::get().read<view_matrix_t>(GlobalVars::get().viewMatrixAddr);
+
+	uintptr_t meshAddr = Memory::get().read<uintptr_t>(player->base + GlobalVars::get().ofs.playerMesh_offset);
+	uintptr_t skeletonArrayAddr = Memory::get().read<uintptr_t>(meshAddr + GlobalVars::get().ofs.playerBoneArray_offset);
+	uintptr_t skeletonMatrixAddr = meshAddr + GlobalVars::get().ofs.playerComponentToWorld_offset;
+	Vector3 targetV3 = getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48);
+
+	meshAddr = Memory::get().read<uintptr_t>(GlobalVars::get().localPlayer->base + GlobalVars::get().ofs.playerMesh_offset);
+	skeletonArrayAddr = Memory::get().read<uintptr_t>(meshAddr + GlobalVars::get().ofs.playerBoneArray_offset);
+	skeletonMatrixAddr = meshAddr + GlobalVars::get().ofs.playerComponentToWorld_offset;
+	Vector3 myV3 = getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48);
+
+	Vector3 diffV3 = targetV3 - myV3;
+	Vector2 mouseV2;
+	mouseV2.x = atan2f(diffV3.y, diffV3.x) * 57.29577951308;
+	mouseV2.y = atan2f(diffV3.z, sqrt(diffV3.x * diffV3.x + diffV3.y * diffV3.y)) * 57.29577951308;
+
+	// 内存自瞄
+	uintptr_t mouseAddr = Memory::get().read<uintptr_t>(GlobalVars::get().baseAddr + 0x05756B38);
+	uintptr_t mouseAddrOffset1 = Memory::get().read<uintptr_t>(mouseAddr + 0x10);
+	uintptr_t mouseAddrOffset2 = Memory::get().read<uintptr_t>(mouseAddrOffset1 + 0x240);
+	Memory::get().write<float>(mouseAddrOffset2 + 0x4e4, mouseV2.x);
+	Memory::get().write<float>(mouseAddrOffset2 + 0x4e4 + 0x8, mouseV2.y);
+
+	// 磁性自瞄
+	//Vector2 screenSize = GlobalVars::get().drawRect.getSize();
+	//Vector2 bone2D;
+	//if (boneWorldToScreen(screenSize, getBonePos(skeletonMatrixAddr, skeletonArrayAddr + index * 48), bone2D, matrix))
+	//{
+	//	/*cout << "base=" << player->base << ",index=" << index << ",bone2D.x=" << bone2D.x << ",bone2D.y=" << bone2D.x << endl;
+	//	cout << "centerX=" << GlobalVars::get().drawRect.centerX << ",centerY=" << GlobalVars::get().drawRect.centerY << endl;*/
+	//	// 缩放率越大，移动越平滑，但太过大会移动缓慢。缩放率越小，移动就越快速，加速度可能还会让镜头甩动
+	//	//float scaleRate = 6.0f;
+	//	//mouse_event(MOUSEEVENTF_MOVE, (bone2D.x - GlobalVars::get().drawRect.centerX) / scaleRate, (bone2D.y - GlobalVars::get().drawRect.centerY) / scaleRate, 0, 0);
+
+	//	aimAt(bone2D);
+	//}
 }
 
 // 将鼠标平滑移动指向瞄准目标
