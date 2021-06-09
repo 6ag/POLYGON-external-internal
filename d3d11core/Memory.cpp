@@ -25,6 +25,7 @@ DWORD Memory::getProcessId(const char * processName)
 		}
 		while (Process32Next(hDump, &pe32));
 	}
+	CloseHandle(hDump);
 	return 0;
 }
 
@@ -70,7 +71,8 @@ uintptr_t Memory::GetModuleBaseAddr(const char * moduleName)
 		}
 		while (Module32Next(hDump, &me32));
 	}
-	return -1337;
+	CloseHandle(hDump);
+	return 0;
 #else
 	return (uintptr_t)GetModuleHandleA(moduleName);
 #endif

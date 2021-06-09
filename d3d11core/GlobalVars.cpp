@@ -137,7 +137,7 @@ void GlobalVars::updatePlayerList()
 
 		std::string bpCName = getBpCName(actorBaseAddr);
 		// 不属于双方阵营直接过滤
-		if (bpCName != "BP_PG_Character_Blue_C" && bpCName != "BP_PG_Character_Red_C")
+		if (bpCName.compare("BP_PG_Character_Blue_C") && bpCName.compare("BP_PG_Character_Red_C"))
 		{
 			continue;
 		}
