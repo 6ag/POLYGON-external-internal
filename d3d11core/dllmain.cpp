@@ -359,6 +359,8 @@ void initOverlayWindow()
 	CleanupDeviceD3D();
 	DestroyWindow(GlobalVars::get().overlayHWindow);
 	UnregisterClass(wc.lpszClassName, wc.hInstance);
+
+	CloseHandle(GlobalVars::get().hProcess);
 }
 
 // 可执行程序入口
