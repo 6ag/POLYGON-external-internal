@@ -34,13 +34,17 @@ void Menu::init()
 		// 外部绘制默认隐藏菜单
 		showMenu = false;
 		ImGui::StyleColorsClassic();
+
+		// 初始化cpu频率和当前开机时间以及事件类型
+		ImGui_ImplWin32_Init(GlobalVars::get().overlayHWindow);
 	#else
 		// 自定义样式
 		styleCusom();
-	#endif
 
 		// 初始化cpu频率和当前开机时间以及事件类型
 		ImGui_ImplWin32_Init(GlobalVars::get().hWindow);
+	#endif
+
 		// 保存dx11到imgui设备和上下文
 		ImGui_ImplDX11_Init(Renderer::get().pD3DDevice, Renderer::get().pD3DDeviceContext);
 
@@ -201,7 +205,7 @@ void Menu::switchState()
 		{
 			// 隐藏菜单，让鼠标穿透透明窗口
 			SetWindowLongPtr(GlobalVars::get().overlayHWindow, GWL_EXSTYLE, WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW);
-		}
+}
 	#endif
 	}
 
